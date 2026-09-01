@@ -3,48 +3,48 @@
 @tailwind utilities;
 
 :root {
-  --background: 220 20% 98%;
-  --foreground: 224 71% 4%;
-  --card: 0 0% 100%;
-  --card-foreground: 224 71% 4%;
+  --background: 210 20% 98%;      /* #F8FAFC */
+  --foreground: 222 47% 11%;      /* #0B1220 */
+  --card: 0 0% 100%;              /* #FFFFFF */
+  --card-foreground: 222 47% 11%;
   --popover: 0 0% 100%;
-  --popover-foreground: 224 71% 4%;
-  --primary: 222 47% 11%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 221 83% 53%;         /* Trust Blue #2563EB */
   --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222 47% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222 47% 11.2%;
-  --destructive: 0 84.2% 60.2%;
+  --secondary: 214 32% 91%;       /* Clean slate tint #E2E8F0 */
+  --secondary-foreground: 222 47% 11%;
+  --muted: 214 32% 91%;
+  --muted-foreground: 215 16% 47%;/* #64748B */
+  --accent: 221 83% 53%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 84% 60%;       /* #DC2626 */
   --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
-  --radius: 0.75rem;
+  --border: 214 32% 91%;          /* #E2E8F0 */
+  --input: 214 32% 91%;
+  --ring: 221 83% 53%;
+  --radius: 0.5rem;               /* 8px moderate radius */
 }
 
 .dark {
-  --background: 224 71% 4%;
-  --foreground: 210 40% 98%;
-  --card: 224 71% 6%;
+  --background: 222 47% 8%;       /* Deep Dark Navy #0B1220 */
+  --foreground: 210 40% 98%;      /* #F8FAFC */
+  --card: 222 47% 10%;           /* #0F172A */
   --card-foreground: 210 40% 98%;
-  --popover: 224 71% 6%;
+  --popover: 222 47% 10%;
   --popover-foreground: 210 40% 98%;
-  --primary: 210 40% 98%;
-  --primary-foreground: 222.2 47.4% 11.2%;
-  --secondary: 217.2 32.6% 14%;
+  --primary: 221 83% 53%;         /* #2563EB */
+  --primary-foreground: 210 40% 98%;
+  --secondary: 217 33% 17%;       /* #1E293B */
   --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 14%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 14%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;/* #94A3B8 */
+  --accent: 221 83% 53%;
   --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
+  --destructive: 0 72% 51%;       /* #DC2626 */
   --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 16%;
-  --input: 217.2 32.6% 16%;
-  --ring: 212.8 26.8% 83.9%;
+  --border: 217 33% 17%;          /* #1E293B */
+  --input: 217 33% 17%;
+  --ring: 221 83% 53%;
 }
 
 * {
@@ -54,19 +54,50 @@
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-feature-settings: "rlig" 1, "calt" 1;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
-.glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+/* Editorial Fine Grid Texture */
+.bg-fine-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
 }
 
-.dark .glass-panel {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.dark .bg-fine-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+/* 3D Orbit & Perspective Utilities */
+.perspective-container {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 4s ease-in-out infinite;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

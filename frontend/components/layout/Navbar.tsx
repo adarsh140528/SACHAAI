@@ -12,7 +12,7 @@ import {
   Sun,
   LogOut,
   User,
-  Sparkles
+  ArrowRight
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -73,79 +73,83 @@ export default function Navbar() {
     }
   };
 
-  // Logged-out links vs Logged-in links
+  // Editorial Navigation Links
   const navLinks = isLoggedIn
     ? [
-        { href: "/", label: "Verify Claim", icon: ShieldCheck },
-        { href: "/dashboard", label: "Dashboard", icon: BarChart2 },
-        { href: "/history", label: "History", icon: History },
-        { href: "/developers", label: "API & Devs", icon: Terminal },
-        { href: "/pricing", label: "Pricing", icon: Bookmark },
+        { href: "/", label: "Verify Claim" },
+        { href: "/dashboard", label: "Dashboard" },
+        { href: "/history", label: "History" },
+        { href: "/developers", label: "API & Devs" },
+        { href: "/pricing", label: "Pricing" },
       ]
     : [
-        { href: "/", label: "Verify Claim", icon: ShieldCheck },
-        { href: "/pricing", label: "Pricing", icon: Bookmark },
+        { href: "/", label: "Verify Claim" },
+        { href: "/pricing", label: "Pricing" },
       ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
-      <div className="container flex h-16 max-w-7xl items-center justify-between px-4 sm:px-8">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-cyan-500 shadow-md shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-            <ShieldCheck className="h-6 w-6 text-white" />
+    <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-md">
+      <div className="container flex h-14 max-w-7xl items-center justify-between px-4 sm:px-8">
+        {/* Minimal Geometric Brand Mark */}
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-sm group-hover:bg-primary/90 transition-colors">
+            <ShieldCheck className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text">
-              SACHAI<span className="text-emerald-500">.AI</span>
+            <span className="text-base font-extrabold tracking-tight text-foreground">
+              SACHAI<span className="text-primary">.AI</span>
             </span>
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest -mt-1">
+            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest -mt-1">
               Evidence Engine
             </span>
           </div>
         </Link>
 
+        {/* Clean Editorial Nav Links with Subtle Active Indicators */}
         <nav className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => {
-            const Icon = link.icon;
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`relative px-3.5 py-1.5 text-xs font-semibold transition-colors ${
                   isActive
-                    ? "bg-secondary text-foreground font-semibold shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <Icon className="h-4 w-4" />
                 {link.label}
+                {isActive && (
+                  <span className="absolute bottom-0 left-3.5 right-3.5 h-[2px] bg-primary rounded-full" />
+                )}
               </Link>
             );
           })}
         </nav>
 
-        <div className="flex items-center gap-3">
+        {/* Controls & Auth State */}
+        <div className="flex items-center gap-2.5">
           <button
             onClick={toggleTheme}
-            className="h-9 w-9 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-colors"
+            className="h-8 w-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
             title="Toggle theme"
           >
-            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
           </button>
 
           {isLoggedIn ? (
-            <div className="flex items-center gap-2.5">
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border bg-secondary/50 text-xs font-semibold">
-                <User className="h-3.5 w-3.5 text-emerald-500" />
+            <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-border bg-secondary text-xs font-semibold">
+                <User className="h-3 w-3 text-primary" />
                 <span>{userName}</span>
               </div>
               <button
                 onClick={handleSignOut}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-destructive/30 hover:bg-destructive/10 text-destructive text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-destructive/30 hover:bg-destructive/10 text-destructive text-xs font-semibold transition-colors"
                 title="Sign Out"
               >
-                <LogOut className="h-3.5 w-3.5" />
+                <LogOut className="h-3 w-3" />
                 <span className="hidden sm:inline">Sign Out</span>
               </button>
             </div>
@@ -153,13 +157,13 @@ export default function Navbar() {
             <div className="flex items-center gap-2">
               <Link
                 href="/sign-in"
-                className="inline-flex items-center justify-center rounded-xl border border-border px-3.5 py-1.5 text-xs sm:text-sm font-medium hover:bg-secondary transition-colors"
+                className="inline-flex items-center justify-center rounded-lg border border-border px-3 py-1 text-xs font-semibold hover:bg-secondary transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 href="/sign-up"
-                className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-4 py-1.5 text-xs sm:text-sm font-medium text-white shadow-sm shadow-emerald-600/30 hover:bg-emerald-500 transition-all active:scale-95"
+                className="inline-flex items-center justify-center rounded-lg bg-primary px-3.5 py-1 text-xs font-semibold text-white shadow-sm hover:bg-primary/90 transition-all"
               >
                 Sign Up
               </Link>
