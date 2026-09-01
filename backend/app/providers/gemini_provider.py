@@ -22,7 +22,14 @@ class GeminiProvider:
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=self.api_key)
-                self._model = genai.GenerativeModel("gemini-1.5-flash")
+                for model_candidate in ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-flash-latest"]:
+                    try:
+                        self._model = genai.GenerativeModel(model_candidate)
+                        break
+                    except Exception:
+                        continue
+                if not self._model:
+                    self._model = genai.GenerativeModel("gemini-3.5-flash-lite")
             except Exception as e:
                 logger.warning(f"Could not configure google.generativeai: {e}")
 

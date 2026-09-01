@@ -16,7 +16,14 @@ class OCRVisionService:
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=settings.GEMINI_API_KEY)
-                self._gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+                for candidate in ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-flash-latest"]:
+                    try:
+                        self._gemini_model = genai.GenerativeModel(candidate)
+                        break
+                    except Exception:
+                        continue
+                if not self._gemini_model:
+                    self._gemini_model = genai.GenerativeModel("gemini-3.5-flash-lite")
             except Exception as e:
                 logger.warning(f"Could not configure Gemini vision: {e}")
 
