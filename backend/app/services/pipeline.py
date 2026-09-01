@@ -12,6 +12,7 @@ from backend.app.models.verdict import Verdict
 from backend.app.models.fact_check import FactCheck
 
 from backend.app.services.claim_extractor import claim_extractor_service
+from backend.app.services.whatsapp_service import whatsapp_service
 from backend.app.services.factcheck_service import factcheck_service
 from backend.app.services.search_service import search_service
 from backend.app.services.evidence_extractor import evidence_extractor_service
@@ -40,12 +41,16 @@ class VerificationPipeline:
             return None
 
         try:
-            # Stage 1: Claim Extraction
+            # Stage 1: Claim Extraction & Decomposition
             check.status = "EXTRACTING"
-            check.current_stage = "Extracting factual claims..."
+            check.current_stage = "Extracting and decomposing factual claims..."
             await db.commit()
 
-            raw_claims = await claim_extractor_service.extract_and_normalize_claims(check.raw_input)
+            if check.input_type == "WHATSAPP_FORWARD" or check.input_type == "WHATSAPP":
+                raw_claims = await whatsapp_service.decompose_whatsapp_message(check.raw_input)
+            else:
+                raw_claims = await claim_extractor_service.extract_and_normalize_claims(check.raw_input)
+                
             logger.info(f"Extracted {len(raw_claims)} claims for verification.")
 
             overall_verdicts = []
@@ -54,7 +59,7 @@ class VerificationPipeline:
             for claim_data in raw_claims:
                 claim_record = Claim(
                     check_id=check.id,
-                    claim_text=claim_data["claim_text"],
+                    claim_text=claim_data.get("claim_text", check.raw_input),
                     claim_type=claim_data.get("claim_type", "FACTUAL"),
                     canonical_data=claim_data.get("canonical_data"),
                     claim_time=claim_data.get("claim_time", "Current"),
@@ -65,7 +70,7 @@ class VerificationPipeline:
 
                 # Stage 2: Parallel Fact-Check & Web Search Retrieval
                 check.status = "SEARCHING"
-                check.current_stage = f"Searching web evidence for claim: {claim_record.claim_text[:40]}..."
+                check.current_stage = f"Searching web evidence for: {claim_record.claim_text[:40]}..."
                 await db.commit()
 
                 fact_checks = await factcheck_service.retrieve_existing_fact_checks(claim_record.claim_text)
@@ -155,27 +160,37 @@ class VerificationPipeline:
             check.processing_time_ms = round((time.time() - start_time) * 1000, 2)
             check.completed_at = datetime.utcnow()
 
-            # Synthesize overall verdict
+            # Synthesize overall multi-claim breakdown
             if len(overall_verdicts) == 1:
                 check.overall_verdict = overall_verdicts[0]
                 check.overall_confidence = confidence_str
                 check.overall_summary = overall_summaries[0]
             else:
-                if any(v == "FALSE" for v in overall_verdicts):
-                    check.overall_verdict = "PARTLY_TRUE" if any(v == "TRUE" for v in overall_verdicts) else "FALSE"
-                elif any(v == "MISLEADING" for v in overall_verdicts):
+                false_count = sum(1 for v in overall_verdicts if v == "FALSE")
+                true_count = sum(1 for v in overall_verdicts if v == "TRUE")
+                misleading_count = sum(1 for v in overall_verdicts if v == "MISLEADING")
+                
+                if false_count > 0 and true_count > 0:
+                    check.overall_verdict = "PARTLY_TRUE"
+                elif false_count > 0:
+                    check.overall_verdict = "FALSE"
+                elif misleading_count > 0:
                     check.overall_verdict = "MISLEADING"
-                elif all(v == "TRUE" for v in overall_verdicts):
+                elif true_count > 0:
                     check.overall_verdict = "TRUE"
                 else:
                     check.overall_verdict = "UNVERIFIED"
-                
-                check.overall_confidence = "HIGH" if "HIGH" in [v for v in overall_verdicts] else "MEDIUM"
-                check.overall_summary = "Multi-claim analysis completed: " + " | ".join(overall_summaries[:3])
+
+                check.overall_confidence = "HIGH" if any(v in ["TRUE", "FALSE"] for v in overall_verdicts) else "MEDIUM"
+                check.overall_summary = (
+                    f"Multi-claim analysis ({len(overall_verdicts)} claims analyzed): "
+                    f"{true_count} True, {false_count} False, {misleading_count} Misleading.\n\n"
+                    + "\n\n".join([f"Claim {i+1}: {s}" for i, s in enumerate(overall_summaries)])
+                )
 
             await db.commit()
             await db.refresh(check)
-            logger.info(f"Verification pipeline completed successfully in {check.processing_time_ms}ms with verdict: {check.overall_verdict}")
+            logger.info(f"Verification pipeline completed in {check.processing_time_ms}ms with verdict: {check.overall_verdict}")
             return check
 
         except Exception as e:

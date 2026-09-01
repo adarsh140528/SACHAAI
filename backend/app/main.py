@@ -11,6 +11,7 @@ from backend.app.db.session import init_db
 from backend.app.api.routes.health import router as health_router
 from backend.app.api.routes.auth import router as auth_router
 from backend.app.api.routes.checks import router as checks_router
+from backend.app.api.routes.uploads import router as uploads_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -59,6 +60,7 @@ app.include_router(health_router, tags=["Health"])
 app.include_router(health_router, prefix=settings.API_V1_STR)
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(checks_router, prefix=settings.API_V1_STR)
+app.include_router(uploads_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():
