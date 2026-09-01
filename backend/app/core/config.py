@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -15,7 +15,11 @@ class Settings(BaseSettings):
     AUTH_SECRET: str = "sachai-super-secret-key-change-in-production-min-32-chars-long"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
-    # Database (Postgres / Supabase with SQLite automatic fallback)
+    # Supabase / Database configuration
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_ANON_KEY: Optional[str] = None
+    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
+    # Database URL can be Supabase Postgres pooler/direct connection string or SQLite local fallback
     DATABASE_URL: str = "sqlite+aiosqlite:///./sachai.db"
     
     # Redis (with in-memory async fallback)

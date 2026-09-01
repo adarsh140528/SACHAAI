@@ -4,18 +4,23 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from backend.app.core.config import settings
 from backend.app.db.base import Base
 
-# Ensure SQLite path is formatted properly for async
+# Ensure Supabase / Postgres path is formatted properly for asyncpg
 db_url = settings.DATABASE_URL
-if db_url.startswith("postgresql://"):
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+asyncpg://"):
     db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 elif db_url.startswith("sqlite:///") and not db_url.startswith("sqlite+aiosqlite:///"):
     db_url = db_url.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
 
-# Ensure database directory exists if sqlite
+# Configure engine arguments
+connect_args = {}
 if "sqlite" in db_url:
     connect_args = {"check_same_thread": False}
-else:
-    connect_args = {}
+elif "postgresql+asyncpg" in db_url:
+    # Supabase uses SSL mode require
+    if "sslmode=require" in db_url or "supabase" in db_url:
+        connect_args = {"ssl": "require"}
 
 engine = create_async_engine(
     db_url,
@@ -40,7 +45,6 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             await session.close()
 
 async def init_db():
-    # Import all models so that Base.metadata has all table definitions
     import backend.app.models  # noqa
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

@@ -3,7 +3,6 @@ import time
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend.app.core.config import settings
@@ -11,6 +10,7 @@ from backend.app.core.logging import logger
 from backend.app.db.session import init_db
 from backend.app.api.routes.health import router as health_router
 from backend.app.api.routes.auth import router as auth_router
+from backend.app.api.routes.checks import router as checks_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,7 +35,7 @@ app = FastAPI(
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows Next.js dev server & production domains
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,6 +58,7 @@ app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads"
 app.include_router(health_router, tags=["Health"])
 app.include_router(health_router, prefix=settings.API_V1_STR)
 app.include_router(auth_router, prefix=settings.API_V1_STR)
+app.include_router(checks_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():
