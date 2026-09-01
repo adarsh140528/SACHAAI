@@ -12,6 +12,9 @@ from backend.app.api.routes.health import router as health_router
 from backend.app.api.routes.auth import router as auth_router
 from backend.app.api.routes.checks import router as checks_router
 from backend.app.api.routes.uploads import router as uploads_router
+from backend.app.api.routes.saved import router as saved_router
+from backend.app.api.routes.analytics import router as analytics_router
+from backend.app.api.routes.feedback import router as feedback_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -61,6 +64,9 @@ app.include_router(health_router, prefix=settings.API_V1_STR)
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(checks_router, prefix=settings.API_V1_STR)
 app.include_router(uploads_router, prefix=settings.API_V1_STR)
+app.include_router(saved_router, prefix=settings.API_V1_STR)
+app.include_router(analytics_router, prefix=settings.API_V1_STR)
+app.include_router(feedback_router, prefix=settings.API_V1_STR)
 
 @app.get("/")
 async def root():
