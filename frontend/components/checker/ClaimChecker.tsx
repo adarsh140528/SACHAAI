@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
@@ -15,7 +16,10 @@ import {
   CheckCircle2,
   AlertCircle,
   UploadCloud,
-  X
+  X,
+  Lock,
+  UserPlus,
+  LogIn
 } from "lucide-react";
 import { submitCheck } from "@/lib/api";
 
@@ -38,8 +42,40 @@ export default function ClaimChecker() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentStage, setCurrentStage] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  
+  // Auth & Guest restriction state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [guestChecksCount, setGuestChecksCount] = useState(0);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalReason, setAuthModalReason] = useState<"guest_limit" | "modality_lock">("guest_limit");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("sachai_token");
+      setIsLoggedIn(!!token);
+
+      const guestChecks = parseInt(localStorage.getItem("sachai_guest_checks") || "0", 10);
+      setGuestChecksCount(guestChecks);
+    }
+  }, []);
+
+  const handleTabChange = (tab: "TEXT" | "URL" | "IMAGE" | "WHATSAPP") => {
+    if (!isLoggedIn && tab !== "TEXT") {
+      setAuthModalReason("modality_lock");
+      setShowAuthModal(true);
+      return;
+    }
+    setActiveTab(tab);
+    setErrorMsg("");
+  };
 
   const handleFileSelect = async (file: File) => {
+    if (!isLoggedIn) {
+      setAuthModalReason("modality_lock");
+      setShowAuthModal(true);
+      return;
+    }
+
     if (!file) return;
     setErrorMsg("");
     setSelectedFile(file);
@@ -72,278 +108,315 @@ export default function ClaimChecker() {
     }
   };
 
-  const clearSelectedFile = () => {
+  const clearImage = () => {
     setSelectedFile(null);
     setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!inputVal.trim()) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputVal.trim()) {
+      setErrorMsg("Please enter a claim, URL, or statement to verify.");
+      return;
+    }
+
+    // Guest 1-check limit enforcement
+    if (!isLoggedIn) {
+      if (activeTab !== "TEXT") {
+        setAuthModalReason("modality_lock");
+        setShowAuthModal(true);
+        return;
+      }
+      if (guestChecksCount >= 1) {
+        setAuthModalReason("guest_limit");
+        setShowAuthModal(true);
+        return;
+      }
+    }
 
     setLoading(true);
     setErrorMsg("");
-    setCurrentStage("Extracting and normalizing factual claims...");
+    setCurrentStage("Extracting and decomposing factual claim...");
 
     try {
-      const stageTimer1 = setTimeout(() => setCurrentStage("Searching primary sources & official fact-checks..."), 800);
-      const stageTimer2 = setTimeout(() => setCurrentStage("Ranking source reliability & clustering syndication..."), 1600);
-      const stageTimer3 = setTimeout(() => setCurrentStage("Evaluating evidence relationships & calculating verdict..."), 2400);
+      const progressTimer = setTimeout(() => {
+        setCurrentStage("Searching primary sources & fact-check registries...");
+      }, 1200);
+
+      const progressTimer2 = setTimeout(() => {
+        setCurrentStage("Ranking source reliability & evaluating evidence...");
+      }, 2500);
 
       const data = await submitCheck({
-        input: inputVal.trim(),
+        input: inputVal,
         input_type: activeTab,
       });
 
-      clearTimeout(stageTimer1);
-      clearTimeout(stageTimer2);
-      clearTimeout(stageTimer3);
+      clearTimeout(progressTimer);
+      clearTimeout(progressTimer2);
 
-      if (data.check_id) {
-        router.push(`/check/${data.check_id}`);
-      } else {
-        throw new Error("No check ID returned from verification engine.");
+      // Increment guest checks count if anonymous
+      if (!isLoggedIn) {
+        const newCount = guestChecksCount + 1;
+        setGuestChecksCount(newCount);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("sachai_guest_checks", newCount.toString());
+        }
       }
+
+      router.push(`/check/${data.check_id}`);
     } catch (err: any) {
-      setErrorMsg(err.message || "An error occurred while verifying the claim.");
+      setErrorMsg(err.message || "Verification request failed. Please try again.");
       setLoading(false);
     }
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      {/* Hidden File Input */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        accept="image/png,image/jpeg,image/webp"
-        className="hidden"
-        onChange={(e) => {
-          if (e.target.files && e.target.files[0]) {
-            handleFileSelect(e.target.files[0]);
-          }
-        }}
-      />
-
-      {/* Input Mode Selector Tabs */}
-      <div className="flex items-center justify-center p-1.5 mb-4 rounded-2xl bg-secondary/70 border border-border/80 backdrop-blur-md max-w-lg mx-auto shadow-sm">
-        <button
-          type="button"
-          onClick={() => { setActiveTab("TEXT"); setErrorMsg(""); }}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-            activeTab === "TEXT"
-              ? "bg-background text-foreground shadow-sm shadow-black/5"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <FileText className="h-4 w-4 text-emerald-500" />
-          <span>Text Claim</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => { setActiveTab("URL"); setErrorMsg(""); }}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-            activeTab === "URL"
-              ? "bg-background text-foreground shadow-sm shadow-black/5"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <LinkIcon className="h-4 w-4 text-cyan-500" />
-          <span>News URL</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => { setActiveTab("IMAGE"); setErrorMsg(""); }}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-            activeTab === "IMAGE"
-              ? "bg-background text-foreground shadow-sm shadow-black/5"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <ImageIcon className="h-4 w-4 text-amber-500" />
-          <span>Image</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => { setActiveTab("WHATSAPP"); setErrorMsg(""); }}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-            activeTab === "WHATSAPP"
-              ? "bg-background text-foreground shadow-sm shadow-black/5"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <MessageSquare className="h-4 w-4 text-emerald-400" />
-          <span>WhatsApp</span>
-        </button>
-      </div>
-
-      {/* Main Verification Card */}
-      <div className="rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl p-5 sm:p-8 shadow-xl relative overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-60 h-60 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <form onSubmit={handleSubmit} className="space-y-4 relative z-10">
-          {/* File Upload Dropzone for Image & WhatsApp modes */}
-          {(activeTab === "IMAGE" || activeTab === "WHATSAPP") && !imagePreview && (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                  handleFileSelect(e.dataTransfer.files[0]);
-                }
-              }}
-              className="cursor-pointer p-6 rounded-2xl border-2 border-dashed border-border/80 hover:border-emerald-500/50 bg-background/50 hover:bg-secondary/30 transition-all flex flex-col items-center justify-center gap-2 text-center"
-            >
-              <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                <UploadCloud className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm font-semibold text-foreground">
-                  Click to upload or drag & drop image screenshot
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  PNG, JPG, or WEBP (up to 10MB) — Optical Character Recognition will extract text
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Image Preview if uploaded */}
-          {imagePreview && (
-            <div className="relative rounded-2xl border border-border overflow-hidden bg-background p-3 flex items-center gap-4">
-              <img
-                src={imagePreview}
-                alt="Upload preview"
-                className="h-20 w-20 object-cover rounded-xl border border-border"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-foreground truncate">
-                    {selectedFile?.name}
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-semibold uppercase">
-                    {uploadingImage ? "Processing OCR..." : "OCR Transcribed"}
-                  </span>
-                </div>
-                <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1">
-                  {uploadingImage ? "Reading visual text..." : inputVal || "Text extracted below."}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={clearSelectedFile}
-                className="h-8 w-8 rounded-lg bg-secondary hover:bg-destructive/10 hover:text-destructive flex items-center justify-center text-muted-foreground transition-colors"
-                title="Remove image"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          )}
-
-          {/* Textarea */}
-          <div className="relative">
-            <textarea
-              rows={activeTab === "TEXT" || activeTab === "WHATSAPP" ? 4 : 2}
-              value={inputVal}
-              onChange={(e) => setInputVal(e.target.value)}
-              placeholder={
+    <>
+      <div className="w-full max-w-3xl mx-auto rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-emerald-950/10 space-y-6">
+        {/* Modality Tabs */}
+        <div className="flex items-center justify-between border-b border-border/60 pb-4">
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1">
+            <button
+              type="button"
+              onClick={() => handleTabChange("TEXT")}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
                 activeTab === "TEXT"
-                  ? "Paste a news statement, viral headline, or factual claim to verify with evidence..."
-                  : activeTab === "URL"
-                  ? "https://example.com/news/article-headline..."
-                  : activeTab === "IMAGE"
-                  ? "Extracted text from image will appear here, or type claim directly..."
-                  : "Paste viral WhatsApp forward message here..."
-              }
-              disabled={loading || uploadingImage}
-              className="w-full rounded-2xl border border-border/90 bg-background/90 p-4 sm:p-5 text-sm sm:text-base placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/50 transition-all resize-none shadow-inner"
-            />
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+              }`}
+            >
+              <FileText className="h-4 w-4" />
+              <span>Text Claim</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabChange("URL")}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                activeTab === "URL"
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+              }`}
+            >
+              <LinkIcon className="h-4 w-4" />
+              <span>News URL</span>
+              {!isLoggedIn && <Lock className="h-3 w-3 opacity-60 ml-0.5" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabChange("IMAGE")}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                activeTab === "IMAGE"
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+              }`}
+            >
+              <ImageIcon className="h-4 w-4" />
+              <span>Image & OCR</span>
+              {!isLoggedIn && <Lock className="h-3 w-3 opacity-60 ml-0.5" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabChange("WHATSAPP")}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+                activeTab === "WHATSAPP"
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+              }`}
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>WhatsApp</span>
+              {!isLoggedIn && <Lock className="h-3 w-3 opacity-60 ml-0.5" />}
+            </button>
           </div>
 
+          <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-bold text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>AI + Live Evidence</span>
+          </div>
+        </div>
+
+        {/* Guest 1-Check Banner */}
+        {!isLoggedIn && (
+          <div className="flex items-center justify-between p-3 rounded-2xl bg-secondary/40 border border-border/80 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              <span>
+                Guest Mode: <strong>{1 - Math.min(guestChecksCount, 1)} free text check remaining</strong>
+              </span>
+            </div>
+            <Link href="/sign-up" className="text-emerald-500 font-semibold hover:underline flex items-center gap-1">
+              Sign up for unlimited <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+        )}
+
+        {/* Input Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
           {errorMsg && (
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm">
+            <div className="flex items-center gap-2 p-3.5 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs animate-in fade-in">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          {/* Action Row */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground w-full sm:w-auto justify-center sm:justify-start">
-              <ShieldCheck className="h-4 w-4 text-emerald-500" />
-              <span>Evidence-based verification via primary sources & official gazettes</span>
-            </div>
+          {/* Image Upload Zone */}
+          {activeTab === "IMAGE" && (
+            <div className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png, image/jpeg, image/webp"
+                className="hidden"
+                onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
+              />
 
+              {imagePreview ? (
+                <div className="relative rounded-2xl border border-border overflow-hidden bg-secondary/30 p-2 flex items-center gap-4">
+                  <img src={imagePreview} alt="Preview" className="h-20 w-20 object-cover rounded-xl border border-border" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">{selectedFile?.name}</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      {uploadingImage ? "Transcribing text via Multimodal Vision..." : "Image text transcribed into box below"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    className="p-1.5 rounded-lg border border-border hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors mr-2"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="cursor-pointer border-2 border-dashed border-border hover:border-emerald-500/60 rounded-2xl p-6 text-center space-y-2 bg-secondary/20 hover:bg-secondary/40 transition-colors"
+                >
+                  <div className="h-10 w-10 rounded-full bg-emerald-500/10 text-emerald-500 mx-auto flex items-center justify-center">
+                    <UploadCloud className="h-5 w-5" />
+                  </div>
+                  <p className="text-xs font-semibold text-foreground">Click to upload screenshot, photo, or infographic</p>
+                  <p className="text-[11px] text-muted-foreground">PNG, JPEG, or WEBP up to 10MB (Magic-byte verified)</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Text Area */}
+          <div className="relative">
+            <textarea
+              rows={activeTab === "WHATSAPP" ? 5 : 3}
+              value={inputVal}
+              onChange={(e) => setInputVal(e.target.value)}
+              disabled={loading}
+              placeholder={
+                activeTab === "URL"
+                  ? "Paste public news article URL (e.g. https://www.reuters.com/...)..."
+                  : activeTab === "IMAGE"
+                  ? "Transcribed text from image appears here, or type extra context..."
+                  : activeTab === "WHATSAPP"
+                  ? "Paste entire forwarded WhatsApp message here. SACHAI will decompose multiple claims automatically..."
+                  : "Enter statement, news claim, or viral quote to verify (e.g. 'India banned 2000 rupee notes')..."
+              }
+              className="w-full rounded-2xl border border-border bg-background/60 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/40 transition-all placeholder:text-muted-foreground/60 resize-none font-normal"
+            />
+          </div>
+
+          {/* Quick Example Chips */}
+          <div className="space-y-1.5">
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+              Quick Try:
+            </span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {QUICK_EXAMPLES.map((ex) => (
+                <button
+                  key={ex.label}
+                  type="button"
+                  onClick={() => {
+                    setInputVal(ex.text);
+                    setActiveTab("TEXT");
+                  }}
+                  className="px-2.5 py-1 rounded-lg text-xs font-medium border border-border/80 bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {ex.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Submit Button */}
+          <div className="pt-2">
             <button
               type="submit"
-              disabled={loading || uploadingImage || !inputVal.trim()}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-7 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold text-sm shadow-md shadow-emerald-600/30 transition-all active:scale-95"
+              disabled={loading || !inputVal.trim()}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group active:scale-[0.99]"
             >
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Verifying Evidence...</span>
+                  <span>{currentStage || "Verifying with Evidence..."}</span>
                 </>
               ) : (
                 <>
-                  <span>Check Now</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <Search className="h-4 w-4" />
+                  <span>Verify Claim Against Evidence</span>
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>
           </div>
         </form>
+      </div>
 
-        {/* Live Stage Progress Indicator while Loading */}
-        {loading && (
-          <div className="mt-6 pt-6 border-t border-border/50 animate-in fade-in duration-300">
-            <div className="flex items-center gap-3 p-4 rounded-xl bg-secondary/40 border border-border/60">
-              <div className="h-8 w-8 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
-                <Loader2 className="h-4 w-4 animate-spin" />
+      {/* Auth Prompt Modal for Guest Limits & Modality Lock */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-md rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-2xl space-y-6 relative">
+            <button
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="text-center space-y-3">
+              <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-500 mx-auto flex items-center justify-center border border-amber-500/20">
+                <Lock className="h-6 w-6" />
               </div>
-              <div className="space-y-0.5">
-                <div className="text-xs font-semibold text-emerald-500 uppercase tracking-wider">
-                  Verification Pipeline Active
-                </div>
-                <div className="text-sm font-medium text-foreground">
-                  {currentStage}
-                </div>
-              </div>
+              <h3 className="text-xl font-bold tracking-tight text-foreground">
+                {authModalReason === "guest_limit"
+                  ? "Free Guest Check Used"
+                  : "Sign In Required for This Feature"}
+              </h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {authModalReason === "guest_limit"
+                  ? "You have completed your 1 free guest fact check. Create a free account or sign in to continue unlimited evidence verification."
+                  : "News URL scraping, Multimodal Image OCR, and WhatsApp forward decomposition require a free account."}
+              </p>
+            </div>
+
+            <div className="space-y-2.5 pt-2">
+              <Link
+                href="/sign-up"
+                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs text-center transition-colors flex items-center justify-center gap-2 shadow-md shadow-emerald-600/25"
+              >
+                <UserPlus className="h-4 w-4" /> Create Free Account
+              </Link>
+              <Link
+                href="/sign-in"
+                className="w-full py-2.5 rounded-xl border border-border bg-secondary hover:bg-secondary/70 text-foreground font-semibold text-xs text-center transition-colors flex items-center justify-center gap-2"
+              >
+                <LogIn className="h-4 w-4" /> Sign In to Existing Account
+              </Link>
             </div>
           </div>
-        )}
-
-        {/* Quick Example Pills */}
-        <div className="mt-6 pt-5 border-t border-border/40">
-          <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2.5 flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-            <span>Try an Example Claim</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {QUICK_EXAMPLES.map((ex) => (
-              <button
-                key={ex.label}
-                type="button"
-                onClick={() => {
-                  setInputVal(ex.text);
-                  setActiveTab("TEXT");
-                  clearSelectedFile();
-                  setErrorMsg("");
-                }}
-                className="px-3 py-1.5 rounded-lg border border-border/70 bg-secondary/40 hover:bg-secondary hover:border-emerald-500/40 text-xs font-medium text-muted-foreground hover:text-foreground transition-all"
-              >
-                {ex.label}
-              </button>
-            ))}
-          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
