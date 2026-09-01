@@ -7,9 +7,9 @@ import {
   Search,
   Filter,
   ArrowRight,
-  Trash2,
   ExternalLink,
   RefreshCw,
+  Globe,
   SlidersHorizontal
 } from "lucide-react";
 import { getVerdictBadgeClass, formatDate } from "@/lib/utils";
@@ -27,7 +27,7 @@ export default function HistoryPage() {
   const fetchHistory = async () => {
     setLoading(true);
     try {
-      let url = `${API_URL}/api/v1/checks?limit=50`;
+      let url = `${API_URL}/api/v1/checks?limit=50&filter_by_user=false`;
       if (selectedVerdict !== "ALL") {
         url += `&verdict=${selectedVerdict}`;
       }
@@ -56,99 +56,110 @@ export default function HistoryPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-primary uppercase tracking-wider mb-1">
+            <Globe className="h-3.5 w-3.5" /> Public Community Feed
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
             Verification History
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Search, filter, and inspect past evidence-based verification runs
+            Search, filter, and inspect verified claims across the entire network in real time
           </p>
         </div>
 
         <button
           onClick={fetchHistory}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border bg-card hover:bg-secondary text-xs font-semibold self-start sm:self-auto transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-semibold self-start sm:self-auto transition-colors"
         >
-          <RefreshCw className="h-3.5 w-3.5" /> Refresh
+          <RefreshCw className="h-3.5 w-3.5" /> Refresh Archive
         </button>
       </div>
 
       {/* Search and Filters Bar */}
-      <div className="p-4 rounded-2xl border border-border/80 bg-card/80 backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm">
-        <div className="relative w-full md:max-w-md">
-          <Search className="absolute left-3.5 top-3 h-4 w-4 text-muted-foreground" />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
+            placeholder="Search verified statements, keywords, or topics..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search verified statements or claims..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+            className="w-full pl-9 pr-4 py-2 rounded-lg border border-border bg-card text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all placeholder:text-muted-foreground"
           />
         </div>
 
-        {/* Verdict Filter Pills */}
-        <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+        {/* Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           {VERDICT_FILTERS.map((vf) => (
             <button
               key={vf}
               onClick={() => setSelectedVerdict(vf)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors border ${
                 selectedVerdict === vf
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "bg-secondary/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  ? "bg-primary text-white border-primary"
+                  : "bg-card border-border text-muted-foreground hover:bg-secondary hover:text-foreground"
               }`}
             >
-              {vf}
+              {vf === "ALL" ? "All Verdicts" : vf}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Results Table */}
-      <div className="rounded-3xl border border-border/80 bg-card/80 backdrop-blur-sm p-6 shadow-sm">
+      {/* History Table-First List */}
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
         {loading ? (
-          <div className="py-12 text-center space-y-2 text-muted-foreground">
-            <RefreshCw className="h-6 w-6 text-emerald-500 animate-spin mx-auto" />
-            <p className="text-xs">Loading verification records...</p>
+          <div className="py-16 text-center text-xs text-muted-foreground space-y-2">
+            <RefreshCw className="h-6 w-6 animate-spin mx-auto text-primary" />
+            <p>Loading community verification records...</p>
           </div>
         ) : filteredChecks.length === 0 ? (
-          <div className="py-12 text-center text-xs text-muted-foreground">
-            No verification records found matching your filters.
+          <div className="py-16 text-center text-xs text-muted-foreground space-y-3">
+            <History className="h-8 w-8 mx-auto text-muted-foreground/50" />
+            <p className="font-semibold text-foreground">No verification records found</p>
+            <p>Try clearing filters or search terms.</p>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1 px-4 py-2 rounded-lg bg-primary text-white text-xs font-semibold hover:bg-primary/90"
+            >
+              Verify New Claim
+            </Link>
           </div>
         ) : (
-          <div className="divide-y divide-border/50">
+          <div className="divide-y divide-border">
             {filteredChecks.map((item) => {
               const relClass = getVerdictBadgeClass(item.overall_verdict);
               return (
                 <div
                   key={item.check_id}
-                  className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-secondary/20 px-3 rounded-xl transition-colors"
+                  className="p-4 sm:px-6 hover:bg-secondary/30 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                 >
-                  <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="space-y-1 min-w-0 flex-1">
                     <Link
                       href={`/check/${item.check_id}`}
-                      className="text-sm font-semibold text-foreground hover:text-emerald-500 transition-colors line-clamp-2"
+                      className="text-xs sm:text-sm font-semibold text-foreground hover:text-primary transition-colors line-clamp-2"
                     >
-                      &quot;{item.raw_input}&quot;
+                      {item.raw_input}
                     </Link>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                      <span className="uppercase font-mono text-[10px] px-2 py-0.5 rounded bg-secondary border border-border">
-                        {item.input_type}
-                      </span>
-                      <span>Verified: {formatDate(item.created_at)}</span>
+                    <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-muted-foreground">
+                      <span className="uppercase font-mono">{item.input_type}</span>
                       <span>•</span>
-                      <span>{item.claims?.[0]?.evidence?.length || 0} Sources</span>
+                      <span>{formatDate(item.created_at)}</span>
+                      <span>•</span>
+                      <span>{item.processing_time_ms}ms</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 self-start sm:self-auto">
-                    <span className={`px-3 py-1 rounded-md text-xs font-extrabold border ${relClass}`}>
+                  <div className="flex items-center gap-3 self-start sm:self-auto shrink-0">
+                    <span className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold border ${relClass}`}>
                       {item.overall_verdict || "PROCESSING"}
                     </span>
                     <Link
                       href={`/check/${item.check_id}`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold hover:bg-secondary transition-colors"
+                      className="p-1.5 rounded-lg border border-border hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                      title="Inspect Report"
                     >
-                      Inspect <ArrowRight className="h-3.5 w-3.5" />
+                      <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
                 </div>
