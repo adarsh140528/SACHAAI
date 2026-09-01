@@ -18,9 +18,8 @@ connect_args = {}
 if "sqlite" in db_url:
     connect_args = {"check_same_thread": False}
 elif "postgresql+asyncpg" in db_url:
-    # Supabase uses SSL mode require
-    if "sslmode=require" in db_url or "supabase" in db_url:
-        connect_args = {"ssl": "require"}
+    # Supabase uses SSL mode require and pgbouncer transaction pooler
+    connect_args = {"ssl": "require", "statement_cache_size": 0}
 
 engine = create_async_engine(
     db_url,
