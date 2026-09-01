@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   BarChart2,
   ShieldCheck,
@@ -14,7 +15,9 @@ import {
   TrendingUp,
   Activity,
   Zap,
-  RefreshCw
+  RefreshCw,
+  Lock,
+  User
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -31,18 +34,43 @@ import {
 import { getVerdictBadgeClass, formatDate } from "@/lib/utils";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [analytics, setAnalytics] = useState<any>(null);
   const [recentChecks, setRecentChecks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userProfile, setUserProfile] = useState<{ full_name?: string; email?: string } | null>(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   const fetchDashboardData = async () => {
     setLoading(true);
+    const token = typeof window !== "undefined" ? localStorage.getItem("sachai_token") : null;
+    const userRaw = typeof window !== "undefined" ? localStorage.getItem("sachai_user") : null;
+
+    if (!token) {
+      setIsLoggedIn(false);
+      setLoading(false);
+      return;
+    }
+
+    setIsLoggedIn(true);
+    if (userRaw) {
+      try {
+        setUserProfile(JSON.parse(userRaw));
+      } catch {
+        setUserProfile(null);
+      }
+    }
+
     try {
+      const authHeaders: Record<string, string> = {
+        "Authorization": `Bearer ${token}`
+      };
+
       const [analyticsRes, checksRes] = await Promise.all([
-        fetch(`${API_URL}/api/v1/analytics`),
-        fetch(`${API_URL}/api/v1/checks?limit=6`),
+        fetch(`${API_URL}/api/v1/analytics`, { headers: authHeaders }),
+        fetch(`${API_URL}/api/v1/checks?limit=8&filter_by_user=true`, { headers: authHeaders }),
       ]);
 
       if (analyticsRes.ok) {
@@ -68,15 +96,49 @@ export default function DashboardPage() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-12 space-y-3">
         <RefreshCw className="h-8 w-8 text-emerald-500 animate-spin" />
-        <p className="text-sm font-semibold text-muted-foreground">Loading verification telemetry & analytics...</p>
+        <p className="text-sm font-semibold text-muted-foreground">Loading your personal verification telemetry...</p>
+      </div>
+    );
+  }
+
+  // If user is not logged in, prompt to Sign In / Sign Up
+  if (!isLoggedIn) {
+    return (
+      <div className="container max-w-lg px-4 py-20 mx-auto text-center space-y-6">
+        <div className="h-16 w-16 rounded-3xl bg-amber-500/10 text-amber-500 mx-auto flex items-center justify-center border border-amber-500/20 shadow-lg">
+          <Lock className="h-8 w-8" />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+            Account Required
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Sign in to view your individual verification analytics, historical trends, and personal claims breakdown.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <Link
+            href="/sign-in"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold shadow-md shadow-emerald-600/25 transition-all"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/sign-up"
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl border border-border bg-secondary hover:bg-secondary/70 text-foreground text-sm font-semibold transition-colors"
+          >
+            Create Account
+          </Link>
+        </div>
       </div>
     );
   }
 
   const verdictData = analytics?.verdict_distribution?.filter((v: any) => v.value > 0) || [
-    { name: "True", value: 1, color: "#10b981" },
-    { name: "False", value: 1, color: "#ef4444" },
-    { name: "Misleading", value: 1, color: "#f59e0b" },
+    { name: "True", value: analytics?.true_count || 0, color: "#10b981" },
+    { name: "False", value: analytics?.false_count || 0, color: "#ef4444" },
+    { name: "Misleading", value: analytics?.misleading_count || 0, color: "#f59e0b" },
+    { name: "Partly True", value: analytics?.partly_true_count || 0, color: "#f97316" },
   ];
 
   const inputData = analytics?.input_distribution || [
@@ -86,16 +148,21 @@ export default function DashboardPage() {
     { name: "WhatsApp", count: 0 },
   ];
 
+  const displayName = userProfile?.full_name || userProfile?.email?.split("@")[0] || "User";
+
   return (
     <div className="container max-w-7xl px-4 py-8 sm:py-12 space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-500 uppercase tracking-wider mb-1">
+            <User className="h-3.5 w-3.5" /> Individual User Dashboard
+          </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Verification Dashboard
+            Welcome back, {displayName}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Real-time analytics and telemetry across all processed claims
+            Personal verification telemetry and evidence analytics for your account ({userProfile?.email})
           </p>
         </div>
 
@@ -113,7 +180,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
         <div className="p-4 rounded-2xl border border-border/80 bg-card/80 backdrop-blur-sm space-y-1">
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Total Checks</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider">Your Checks</span>
             <Activity className="h-4 w-4 text-emerald-500" />
           </div>
           <div className="text-2xl font-extrabold">{analytics?.total_checks || 0}</div>
@@ -165,68 +232,80 @@ export default function DashboardPage() {
         {/* Verdict Distribution Donut Chart */}
         <div className="p-6 rounded-3xl border border-border/80 bg-card/80 backdrop-blur-sm shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold tracking-tight text-foreground">Verdict Distribution</h3>
+            <h3 className="text-sm font-bold tracking-tight text-foreground">Your Verdict Distribution</h3>
             <span className="text-xs text-muted-foreground">Evidence Output</span>
           </div>
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={verdictData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={85}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {verdictData.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={entry.color || "#10b981"} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", border: "1px solid #334155", color: "#fff" }}
-                />
-                <Legend verticalAlign="bottom" height={36} />
-              </PieChart>
-            </ResponsiveContainer>
+            {analytics?.total_checks === 0 ? (
+              <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+                No verifications recorded for your account yet.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={verdictData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={85}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {verdictData.map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={entry.color || "#10b981"} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", border: "1px solid #334155", color: "#fff" }}
+                  />
+                  <Legend verticalAlign="bottom" height={36} />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
 
         {/* Input Format Bar Chart */}
         <div className="p-6 rounded-3xl border border-border/80 bg-card/80 backdrop-blur-sm shadow-sm space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold tracking-tight text-foreground">Checks by Input Format</h3>
+            <h3 className="text-sm font-bold tracking-tight text-foreground">Your Ingestion Breakdown</h3>
             <span className="text-xs text-muted-foreground">Multi-modal Ingestion</span>
           </div>
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={inputData}>
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
-                <YAxis stroke="#94a3b8" fontSize={11} allowDecimals={false} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", border: "1px solid #334155", color: "#fff" }}
-                />
-                <Bar dataKey="count" fill="#10b981" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {analytics?.total_checks === 0 ? (
+              <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+                No verifications recorded for your account yet.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={inputData}>
+                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} />
+                  <YAxis stroke="#94a3b8" fontSize={11} allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#0f172a", borderRadius: "12px", border: "1px solid #334155", color: "#fff" }}
+                  />
+                  <Bar dataKey="count" fill="#10b981" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Recent Verifications Table */}
+      {/* Your Recent Verifications Table */}
       <div className="rounded-3xl border border-border/80 bg-card/80 backdrop-blur-sm p-6 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold tracking-tight text-foreground">Recent Verifications</h3>
+          <h3 className="text-base font-bold tracking-tight text-foreground">Your Recent Verifications</h3>
           <Link href="/history" className="text-xs font-semibold text-emerald-500 hover:underline flex items-center gap-1">
-            View All History <ArrowRight className="h-3.5 w-3.5" />
+            View Community History <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
         <div className="divide-y divide-border/50">
           {recentChecks.length === 0 ? (
             <div className="py-8 text-center text-xs text-muted-foreground">
-              No verification checks recorded yet. Run your first check from the homepage!
+              You have not verified any claims with this account yet. Verify your first claim from the homepage!
             </div>
           ) : (
             recentChecks.map((item: any) => {

@@ -163,12 +163,13 @@ async def list_checks(
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=50),
     verdict: Optional[str] = None,
+    filter_by_user: bool = Query(False),
     db: AsyncSession = Depends(get_db),
     current_user: Optional[User] = Depends(get_current_user)
 ):
     offset = (page - 1) * limit
     query = select(Check)
-    if current_user:
+    if filter_by_user and current_user:
         query = query.where(Check.user_id == current_user.id)
     if verdict:
         query = query.where(Check.overall_verdict == verdict.upper())
