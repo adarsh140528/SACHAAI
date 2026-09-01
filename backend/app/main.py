@@ -15,6 +15,8 @@ from backend.app.api.routes.uploads import router as uploads_router
 from backend.app.api.routes.saved import router as saved_router
 from backend.app.api.routes.analytics import router as analytics_router
 from backend.app.api.routes.feedback import router as feedback_router
+from backend.app.api.routes.api_keys import router as api_keys_router
+from backend.app.api.routes.demo import router as demo_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -67,6 +69,23 @@ app.include_router(uploads_router, prefix=settings.API_V1_STR)
 app.include_router(saved_router, prefix=settings.API_V1_STR)
 app.include_router(analytics_router, prefix=settings.API_V1_STR)
 app.include_router(feedback_router, prefix=settings.API_V1_STR)
+app.include_router(api_keys_router, prefix=settings.API_V1_STR)
+app.include_router(demo_router, prefix=settings.API_V1_STR)
+
+# Aliases for Section 35/36 spec compatibility
+@app.post("/v1/check", tags=["Public API"])
+@app.post("/api/v1/check", tags=["Public API"])
+async def public_check_endpoint(req: dict):
+    # Public API endpoint redirect to checks
+    from backend.app.schemas.check import CheckCreateRequest
+    from backend.app.api.routes.checks import create_and_run_check
+    from backend.app.db.session import AsyncSessionLocal
+    async with AsyncSessionLocal() as session:
+        check_req = CheckCreateRequest(
+            input=req.get("input", ""),
+            input_type=req.get("input_type", "TEXT")
+        )
+        return await create_and_run_check(check_req, session)
 
 @app.get("/")
 async def root():
