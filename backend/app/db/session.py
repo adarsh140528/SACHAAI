@@ -21,12 +21,17 @@ elif "postgresql+asyncpg" in db_url:
     # Supabase uses SSL mode require and pgbouncer transaction pooler
     connect_args = {"ssl": "require", "statement_cache_size": 0}
 
-engine = create_async_engine(
-    db_url,
-    echo=False,
-    connect_args=connect_args,
-    future=True,
-)
+from sqlalchemy.pool import NullPool
+
+engine_kwargs = {
+    "echo": False,
+    "connect_args": connect_args,
+    "future": True,
+}
+if "postgresql+asyncpg" in db_url:
+    engine_kwargs["poolclass"] = NullPool
+
+engine = create_async_engine(db_url, **engine_kwargs)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
