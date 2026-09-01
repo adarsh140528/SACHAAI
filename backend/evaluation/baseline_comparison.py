@@ -1,5 +1,15 @@
-import json
+import sys
 import os
+
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+import json
 import asyncio
 from typing import Dict, Any, List
 
@@ -72,11 +82,10 @@ async def evaluate_sachai_architecture(claim: str, cat: str) -> str:
     verdict, _, _ = verdict_engine.calculate_verdict(claim, evidence_items, temporal_context=cat)
     return verdict
 
-async def run_baseline_comparison(sample_count: int = 12):
+async def run_baseline_comparison(sample_count: int = 6):
     with open(DATASET_PATH, "r", encoding="utf-8") as f:
         dataset = json.load(f)
 
-    # Pick balanced test claims
     subset = dataset[:sample_count]
     print(f"\nRunning Baseline Benchmark over {len(subset)} representative claims...\n")
 
@@ -92,7 +101,6 @@ async def run_baseline_comparison(sample_count: int = 12):
         expected = item["expected_verdict"]
         cat = item["category"]
 
-        # Run all 4 pipelines
         res_a = await evaluate_baseline_a_gemini_only(claim)
         res_b = await evaluate_baseline_b_gemini_search(claim)
         res_c = await evaluate_baseline_c_gemini_factcheck_search(claim)

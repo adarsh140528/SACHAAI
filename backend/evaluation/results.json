@@ -1,0 +1,313 @@
+{
+  "dataset_name": "Development Evaluation Dataset",
+  "total_evaluated": 12,
+  "total_correct": 2,
+  "accuracy_pct": 16.67,
+  "macro_f1": 0.085,
+  "class_metrics": {
+    "TRUE": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 2
+    },
+    "FALSE": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 2
+    },
+    "MISLEADING": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 2
+    },
+    "PARTLY_TRUE": {
+      "precision": 0.2,
+      "recall": 0.5,
+      "f1_score": 0.286,
+      "support": 2
+    },
+    "UNVERIFIED": {
+      "precision": 0.143,
+      "recall": 0.5,
+      "f1_score": 0.222,
+      "support": 2
+    },
+    "OUTDATED": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1_score": 0.0,
+      "support": 2
+    }
+  },
+  "confusion_matrix": {
+    "TRUE": {
+      "TRUE": 0,
+      "FALSE": 0,
+      "MISLEADING": 0,
+      "PARTLY_TRUE": 1,
+      "UNVERIFIED": 1,
+      "OUTDATED": 0
+    },
+    "FALSE": {
+      "TRUE": 0,
+      "FALSE": 0,
+      "MISLEADING": 0,
+      "PARTLY_TRUE": 0,
+      "UNVERIFIED": 2,
+      "OUTDATED": 0
+    },
+    "MISLEADING": {
+      "TRUE": 0,
+      "FALSE": 0,
+      "MISLEADING": 0,
+      "PARTLY_TRUE": 0,
+      "UNVERIFIED": 2,
+      "OUTDATED": 0
+    },
+    "PARTLY_TRUE": {
+      "TRUE": 0,
+      "FALSE": 0,
+      "MISLEADING": 0,
+      "PARTLY_TRUE": 1,
+      "UNVERIFIED": 1,
+      "OUTDATED": 0
+    },
+    "UNVERIFIED": {
+      "TRUE": 0,
+      "FALSE": 0,
+      "MISLEADING": 0,
+      "PARTLY_TRUE": 1,
+      "UNVERIFIED": 1,
+      "OUTDATED": 0
+    },
+    "OUTDATED": {
+      "TRUE": 0,
+      "FALSE": 0,
+      "MISLEADING": 0,
+      "PARTLY_TRUE": 2,
+      "UNVERIFIED": 0,
+      "OUTDATED": 0
+    }
+  },
+  "results": [
+    {
+      "id": 1,
+      "claim": "India launched Chandrayaan-3 and successfully soft-landed near the lunar south pole.",
+      "expected": "TRUE",
+      "actual": "PARTLY_TRUE",
+      "confidence": "LOW",
+      "correct": false,
+      "evidence_count": 4,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 4,
+        "highest_source_tier": 1.0,
+        "total_evaluated_evidence": 4
+      }
+    },
+    {
+      "id": 2,
+      "claim": "The Reserve Bank of India is the central banking institution of India.",
+      "expected": "TRUE",
+      "actual": "UNVERIFIED",
+      "confidence": "LOW",
+      "correct": false,
+      "evidence_count": 0,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 0,
+        "highest_source_tier": 0.0,
+        "total_evaluated_evidence": 0
+      }
+    },
+    {
+      "id": 51,
+      "claim": "India has completely banned all UPI transactions after 10 PM daily.",
+      "expected": "FALSE",
+      "actual": "UNVERIFIED",
+      "confidence": "LOW",
+      "correct": false,
+      "evidence_count": 0,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 0,
+        "highest_source_tier": 0.0,
+        "total_evaluated_evidence": 0
+      }
+    },
+    {
+      "id": 52,
+      "claim": "The Government has announced \u20b950,000 cash grant for every Indian citizen under a new emergency scheme.",
+      "expected": "FALSE",
+      "actual": "UNVERIFIED",
+      "confidence": "LOW",
+      "correct": false,
+      "evidence_count": 0,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 0,
+        "highest_source_tier": 0.0,
+        "total_evaluated_evidence": 0
+      }
+    },
+    {
+      "id": 101,
+      "claim": "Old 2019 monsoon waterlogging footage shared as current catastrophic Mumbai flood crisis.",
+      "expected": "MISLEADING",
+      "actual": "UNVERIFIED",
+      "confidence": "LOW",
+      "correct": false,
+      "evidence_count": 4,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 4,
+        "highest_source_tier": 0.7,
+        "total_evaluated_evidence": 4
+      }
+    },
+    {
+      "id": 102,
+      "claim": "Viral video showing military vehicle deployment framed as ongoing civil unrest in capital city.",
+      "expected": "MISLEADING",
+      "actual": "UNVERIFIED",
+      "confidence": "LOW",
+      "correct": false,
+      "evidence_count": 0,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 0,
+        "highest_source_tier": 0.0,
+        "total_evaluated_evidence": 0
+      }
+    },
+    {
+      "id": 126,
+      "claim": "RBI withdrew \u20b92000 notes from circulation, but they remain legal tender at RBI Issue Offices.",
+      "expected": "PARTLY_TRUE",
+      "actual": "UNVERIFIED",
+      "confidence": "LOW",
+      "correct": false,
+      "evidence_count": 8,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 8,
+        "highest_source_tier": 0.7,
+        "total_evaluated_evidence": 8
+      }
+    },
+    {
+      "id": 127,
+      "claim": "Government announced subsidy scheme for rooftop solar, but amount varies by state and requires approved vendor.",
+      "expected": "PARTLY_TRUE",
+      "actual": "PARTLY_TRUE",
+      "confidence": "LOW",
+      "correct": true,
+      "evidence_count": 4,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 4,
+        "highest_source_tier": 1.0,
+        "total_evaluated_evidence": 4
+      }
+    },
+    {
+      "id": 151,
+      "claim": "Secret underground civilization discovered in remote Himalayan cave network.",
+      "expected": "UNVERIFIED",
+      "actual": "PARTLY_TRUE",
+      "confidence": "LOW",
+      "correct": false,
+      "evidence_count": 8,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 8,
+        "highest_source_tier": 0.85,
+        "total_evaluated_evidence": 8
+      }
+    },
+    {
+      "id": 152,
+      "claim": "Anonymous forum post claims major tech CEO will resign next Thursday without public source.",
+      "expected": "UNVERIFIED",
+      "actual": "UNVERIFIED",
+      "confidence": "LOW",
+      "correct": true,
+      "evidence_count": 0,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 0,
+        "highest_source_tier": 0.0,
+        "total_evaluated_evidence": 0
+      }
+    },
+    {
+      "id": 176,
+      "claim": "Section 80EEA income tax interest deduction is applicable for home loans sanctioned in current fiscal year.",
+      "expected": "OUTDATED",
+      "actual": "PARTLY_TRUE",
+      "confidence": "LOW",
+      "correct": false,
+      "evidence_count": 5,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 5,
+        "highest_source_tier": 1.0,
+        "total_evaluated_evidence": 5
+      }
+    },
+    {
+      "id": 177,
+      "claim": "Pluto is classified as the ninth major planet in our solar system.",
+      "expected": "OUTDATED",
+      "actual": "PARTLY_TRUE",
+      "confidence": "LOW",
+      "correct": false,
+      "evidence_count": 4,
+      "metrics": {
+        "supporting_sources": 0,
+        "contradicting_sources": 0,
+        "supporting_weight": 0.0,
+        "contradicting_weight": 0.0,
+        "independent_groups_count": 4,
+        "highest_source_tier": 0.7,
+        "total_evaluated_evidence": 4
+      }
+    }
+  ]
+}

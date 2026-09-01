@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     # Environment & Host
     ENV: str = "development"
     DEBUG: bool = True
+    LOG_LEVEL: str = "INFO"
     
     # Secrets & Authentication
     AUTH_SECRET: str = "sachai-super-secret-key-change-in-production-min-32-chars-long"

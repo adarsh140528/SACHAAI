@@ -1,5 +1,15 @@
-import json
+import sys
 import os
+
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+
+import json
 import asyncio
 from typing import Dict, Any, List
 from collections import defaultdict
@@ -19,17 +29,14 @@ async def evaluate_single_sample(item: Dict[str, Any]) -> Dict[str, Any]:
     claim_text = item["claim"]
     expected = item["expected_verdict"]
     
-    # 1. Search for live web evidence
     search_results = await search_service.execute_multi_query_search(claim_text)
     
-    # 2. Extract atomic evidence and score source tiers
     evidence_items = await evidence_extractor_service.extract_and_evaluate_evidence(
         claim_text=claim_text,
         search_results=search_results,
         fact_checks=[]
     )
     
-    # 3. Deterministic verdict calculation
     actual_verdict, confidence, metrics = verdict_engine.calculate_verdict(
         claim_text=claim_text,
         evidence_items=evidence_items,
@@ -47,12 +54,11 @@ async def evaluate_single_sample(item: Dict[str, Any]) -> Dict[str, Any]:
         "metrics": metrics
     }
 
-async def run_evaluation(sample_limit: int = 20):
+async def run_evaluation(sample_limit: int = 12):
     logger.info(f"Loading evaluation dataset from {DATASET_PATH}...")
     with open(DATASET_PATH, "r", encoding="utf-8") as f:
         dataset = json.load(f)
 
-    # For fast and representative evaluation run, select balanced subset across all categories
     selected_samples = []
     category_counts = defaultdict(int)
     max_per_cat = max(2, sample_limit // len(CATEGORIES))
@@ -69,15 +75,13 @@ async def run_evaluation(sample_limit: int = 20):
     for item in selected_samples:
         res = await evaluate_single_sample(item)
         results.append(res)
-        status_sym = "✓" if res["correct"] else "✗"
-        print(f"[{status_sym}] #{res['id']} Expected: {res['expected']:<12} Actual: {res['actual']:<12} | {res['claim'][:50]}...")
+        status_sym = "[OK]" if res["correct"] else "[X] "
+        print(f"{status_sym} #{res['id']:<3} Expected: {res['expected']:<12} Actual: {res['actual']:<12} | {res['claim'][:50]}...")
 
-    # Calculate Metrics
     total = len(results)
     correct = sum(1 for r in results if r["correct"])
     accuracy = (correct / total) * 100 if total > 0 else 0
 
-    # Confusion Matrix & Class Metrics
     confusion_matrix = {c1: {c2: 0 for c2 in CATEGORIES} for c1 in CATEGORIES}
     tp = defaultdict(int)
     fp = defaultdict(int)
