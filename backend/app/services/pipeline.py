@@ -1,3 +1,4 @@
+import json
 import time
 from datetime import datetime
 from typing import Dict, Any, Optional
@@ -13,6 +14,7 @@ from backend.app.models.fact_check import FactCheck
 
 from backend.app.services.claim_extractor import claim_extractor_service
 from backend.app.services.whatsapp_service import whatsapp_service
+from backend.app.services.url_extractor import url_extractor_service
 from backend.app.services.factcheck_service import factcheck_service
 from backend.app.services.search_service import search_service
 from backend.app.services.evidence_extractor import evidence_extractor_service
@@ -46,17 +48,35 @@ class VerificationPipeline:
             check.current_stage = "Extracting and decomposing factual claims..."
             await db.commit()
 
-            if check.input_type == "WHATSAPP_FORWARD" or check.input_type == "WHATSAPP":
-                raw_claims = await whatsapp_service.decompose_whatsapp_message(check.raw_input)
+            text_to_analyze = check.raw_input
+
+            # Handle URL Input Type
+            if check.input_type in ("URL", "ARTICLE"):
+                check.current_stage = "Fetching and extracting article content safely..."
+                await db.commit()
+                try:
+                    article_data = await url_extractor_service.extract_article_content(check.raw_input.strip())
+                    text_to_analyze = f"{article_data['title']}\n\n{article_data['body']}"
+                    check.input_metadata = json.dumps({
+                        "article_title": article_data["title"],
+                        "article_url": article_data["url"],
+                        "publication_date": article_data.get("publication_date"),
+                    })
+                except Exception as url_err:
+                    logger.warning(f"URL extraction issue: {url_err}")
+                    text_to_analyze = check.raw_input.strip()
+
+            if check.input_type in ("WHATSAPP_FORWARD", "WHATSAPP"):
+                raw_claims = await whatsapp_service.decompose_whatsapp_message(text_to_analyze)
             else:
-                raw_claims = await claim_extractor_service.extract_and_normalize_claims(check.raw_input)
+                raw_claims = await claim_extractor_service.extract_and_normalize_claims(text_to_analyze)
                 
             logger.info(f"Extracted {len(raw_claims)} claims for verification.")
 
             overall_verdicts = []
             overall_summaries = []
 
-            for claim_data in raw_claims:
+            for claim_data in raw_claims[:5]:  # Process up to top 5 distinct claims for multi-claim articles
                 claim_record = Claim(
                     check_id=check.id,
                     claim_text=claim_data.get("claim_text", check.raw_input),
@@ -160,7 +180,7 @@ class VerificationPipeline:
             check.processing_time_ms = round((time.time() - start_time) * 1000, 2)
             check.completed_at = datetime.utcnow()
 
-            # Synthesize overall multi-claim breakdown
+            # Multi-claim Synthesis Breakdown
             if len(overall_verdicts) == 1:
                 check.overall_verdict = overall_verdicts[0]
                 check.overall_confidence = confidence_str
@@ -169,7 +189,8 @@ class VerificationPipeline:
                 false_count = sum(1 for v in overall_verdicts if v == "FALSE")
                 true_count = sum(1 for v in overall_verdicts if v == "TRUE")
                 misleading_count = sum(1 for v in overall_verdicts if v == "MISLEADING")
-                
+                unverified_count = sum(1 for v in overall_verdicts if v == "UNVERIFIED")
+
                 if false_count > 0 and true_count > 0:
                     check.overall_verdict = "PARTLY_TRUE"
                 elif false_count > 0:
@@ -183,14 +204,14 @@ class VerificationPipeline:
 
                 check.overall_confidence = "HIGH" if any(v in ["TRUE", "FALSE"] for v in overall_verdicts) else "MEDIUM"
                 check.overall_summary = (
-                    f"Multi-claim analysis ({len(overall_verdicts)} claims analyzed): "
-                    f"{true_count} True, {false_count} False, {misleading_count} Misleading.\n\n"
+                    f"Article Multi-Claim Breakdown ({len(overall_verdicts)} claims analyzed):\n"
+                    f"• True: {true_count} | False: {false_count} | Misleading: {misleading_count} | Unverified: {unverified_count}\n\n"
                     + "\n\n".join([f"Claim {i+1}: {s}" for i, s in enumerate(overall_summaries)])
                 )
 
             await db.commit()
             await db.refresh(check)
-            logger.info(f"Verification pipeline completed in {check.processing_time_ms}ms with verdict: {check.overall_verdict}")
+            logger.info(f"Pipeline finished for Check {check.id} with verdict {check.overall_verdict} in {check.processing_time_ms}ms")
             return check
 
         except Exception as e:
