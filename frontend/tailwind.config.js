@@ -16,15 +16,35 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-ibm-plex)", "IBM Plex Sans", "sans-serif"],
+        mono: ["var(--font-courier-prime)", "Courier Prime", "monospace"],
+        code: ["var(--font-courier-prime)", "Courier Prime", "monospace"],
+      },
       colors: {
         border: "hsl(var(--border))",
+        "border-base": "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        "on-surface": "hsl(var(--foreground))",
+        "on-surface-variant": "hsl(var(--muted-foreground))",
+        surface: {
+          DEFAULT: "hsl(var(--card))",
+          bright: "hsl(var(--surface-bright))",
+          "container-lowest": "hsl(var(--card))",
+          "container-low": "hsl(var(--surface-container-low))",
+          container: "hsl(var(--surface-container))",
+          "container-high": "hsl(var(--surface-container-high))",
+          "container-highest": "hsl(var(--surface-container-highest))",
+          variant: "hsl(var(--surface-variant))",
+          tint: "hsl(var(--surface-tint))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          container: "hsl(var(--primary-container))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -41,6 +61,7 @@ module.exports = {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          blue: "#2563EB",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -51,18 +72,22 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
         verdict: {
-          true: "#10b981",
-          false: "#ef4444",
-          misleading: "#f59e0b",
-          partly: "#f97316",
-          unverified: "#6b7280",
-          outdated: "#3b82f6",
-        }
+          true: "#15803D",
+          false: "#DC2626",
+          misleading: "#D97706",
+          partly: "#EA580C",
+          unverified: "#64748B",
+          outdated: "#2563EB",
+        },
+        "accent-blue": "#2563EB",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      maxWidth: {
+        "container-max": "1280px",
       },
     },
   },

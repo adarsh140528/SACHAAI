@@ -174,91 +174,91 @@ export default function ClaimChecker() {
 
   return (
     <>
-      <div className="w-full max-w-3xl mx-auto rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl p-6 sm:p-8 shadow-2xl shadow-emerald-950/10 space-y-6">
-        {/* Modality Tabs */}
-        <div className="flex items-center justify-between border-b border-border/60 pb-4">
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1">
+      <div className="w-full bg-card border border-border shadow-xl shadow-primary/5 rounded-lg overflow-hidden flex flex-col transition-all hover:shadow-2xl">
+        {/* Top Bar with Modality Tabs & Brand Tag */}
+        <div className="bg-secondary/40 border-b border-border px-4 py-2.5 flex items-center justify-between">
+          <div className="flex gap-4">
             <button
               type="button"
               onClick={() => handleTabChange("TEXT")}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+              className={`font-mono text-xs uppercase flex items-center gap-1 pb-1 transition-all ${
                 activeTab === "TEXT"
-                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                  ? "text-primary font-bold border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <FileText className="h-4 w-4" />
-              <span>Text Claim</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleTabChange("URL")}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
-                activeTab === "URL"
-                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-              }`}
-            >
-              <LinkIcon className="h-4 w-4" />
-              <span>News URL</span>
-              {!isLoggedIn && <Lock className="h-3 w-3 opacity-60 ml-0.5" />}
+              <FileText className="h-3.5 w-3.5" />
+              <span>Text</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleTabChange("IMAGE")}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+              className={`font-mono text-xs uppercase flex items-center gap-1 pb-1 transition-all ${
                 activeTab === "IMAGE"
-                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                  ? "text-primary font-bold border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <ImageIcon className="h-4 w-4" />
-              <span>Image & OCR</span>
+              <ImageIcon className="h-3.5 w-3.5" />
+              <span>Image</span>
+              {!isLoggedIn && <Lock className="h-3 w-3 opacity-60 ml-0.5" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabChange("URL")}
+              className={`font-mono text-xs uppercase flex items-center gap-1 pb-1 transition-all ${
+                activeTab === "URL"
+                  ? "text-primary font-bold border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <LinkIcon className="h-3.5 w-3.5" />
+              <span>URL</span>
               {!isLoggedIn && <Lock className="h-3 w-3 opacity-60 ml-0.5" />}
             </button>
 
             <button
               type="button"
               onClick={() => handleTabChange("WHATSAPP")}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
+              className={`font-mono text-xs uppercase flex items-center gap-1 pb-1 transition-all ${
                 activeTab === "WHATSAPP"
-                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                  ? "text-primary font-bold border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <MessageSquare className="h-4 w-4" />
+              <MessageSquare className="h-3.5 w-3.5" />
               <span>WhatsApp</span>
               {!isLoggedIn && <Lock className="h-3 w-3 opacity-60 ml-0.5" />}
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-bold text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>AI + Live Evidence</span>
+          <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-verdict-true animate-pulse" />
+            <span>SACHLAI v2.1</span>
           </div>
         </div>
 
         {/* Guest 1-Check Banner */}
         {!isLoggedIn && (
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-secondary/40 border border-border/80 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between px-4 py-2 bg-secondary/30 border-b border-border text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
               <span>
                 Guest Mode: <strong>{1 - Math.min(guestChecksCount, 1)} free text check remaining</strong>
               </span>
             </div>
-            <Link href="/sign-up" className="text-emerald-500 font-semibold hover:underline flex items-center gap-1">
-              Sign up for unlimited <ArrowRight className="h-3 w-3" />
+            <Link href="/sign-up" className="text-accent-blue font-semibold hover:underline flex items-center gap-0.5">
+              Sign up <ArrowRight className="h-2.5 w-2.5" />
             </Link>
           </div>
         )}
 
-        {/* Input Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-4 sm:p-5 flex flex-col gap-3.5">
           {errorMsg && (
-            <div className="flex items-center gap-2 p-3.5 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs animate-in fade-in">
+            <div className="flex items-center gap-2 p-3 rounded-md bg-destructive/10 border border-destructive/30 text-destructive text-xs animate-in fade-in">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
@@ -266,7 +266,7 @@ export default function ClaimChecker() {
 
           {/* Image Upload Zone */}
           {activeTab === "IMAGE" && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -276,32 +276,32 @@ export default function ClaimChecker() {
               />
 
               {imagePreview ? (
-                <div className="relative rounded-2xl border border-border overflow-hidden bg-secondary/30 p-2 flex items-center gap-4">
-                  <img src={imagePreview} alt="Preview" className="h-20 w-20 object-cover rounded-xl border border-border" />
+                <div className="relative rounded-md border border-border overflow-hidden bg-secondary/30 p-2.5 flex items-center gap-3">
+                  <img src={imagePreview} alt="Preview" className="h-14 w-14 object-cover rounded border border-border" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-foreground truncate">{selectedFile?.name}</p>
-                    <p className="text-[11px] text-muted-foreground">
+                    <p className="text-[10px] text-muted-foreground font-mono">
                       {uploadingImage ? "Transcribing text via Multimodal Vision..." : "Image text transcribed into box below"}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={clearImage}
-                    className="p-1.5 rounded-lg border border-border hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors mr-2"
+                    className="p-1 rounded border border-border hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors mr-1"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
               ) : (
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="cursor-pointer border-2 border-dashed border-border hover:border-emerald-500/60 rounded-2xl p-6 text-center space-y-2 bg-secondary/20 hover:bg-secondary/40 transition-colors"
+                  className="cursor-pointer border border-dashed border-border hover:border-accent-blue rounded-md p-4 text-center space-y-1.5 bg-secondary/20 hover:bg-secondary/40 transition-colors"
                 >
-                  <div className="h-10 w-10 rounded-full bg-emerald-500/10 text-emerald-500 mx-auto flex items-center justify-center">
-                    <UploadCloud className="h-5 w-5" />
+                  <div className="h-8 w-8 rounded bg-card text-primary mx-auto flex items-center justify-center border border-border shadow-sm">
+                    <UploadCloud className="h-4 w-4" />
                   </div>
-                  <p className="text-xs font-semibold text-foreground">Click to upload screenshot, photo, or infographic</p>
-                  <p className="text-[11px] text-muted-foreground">PNG, JPEG, or WEBP up to 10MB (Magic-byte verified)</p>
+                  <p className="text-xs font-semibold text-foreground">Click to upload screenshot or photo</p>
+                  <p className="text-[10px] text-muted-foreground font-mono">PNG, JPEG, or WEBP up to 10MB (Magic-byte verified)</p>
                 </div>
               )}
             </div>
@@ -310,65 +310,76 @@ export default function ClaimChecker() {
           {/* Text Area */}
           <div className="relative">
             <textarea
-              rows={activeTab === "WHATSAPP" ? 5 : 3}
+              rows={activeTab === "WHATSAPP" ? 5 : 4}
               value={inputVal}
               onChange={(e) => setInputVal(e.target.value)}
               disabled={loading}
               placeholder={
                 activeTab === "URL"
-                  ? "Paste public news article URL (e.g. https://www.reuters.com/...)..."
+                  ? "Paste a public news article URL to verify embedded claims..."
                   : activeTab === "IMAGE"
                   ? "Transcribed text from image appears here, or type extra context..."
                   : activeTab === "WHATSAPP"
-                  ? "Paste entire forwarded WhatsApp message here. SACHAI will decompose multiple claims automatically..."
-                  : "Enter statement, news claim, or viral quote to verify (e.g. 'India banned 2000 rupee notes')..."
+                  ? "Paste entire forwarded WhatsApp message here. SACHLAI will decompose claims..."
+                  : "Paste a claim, forward, or statement here to begin forensic analysis..."
               }
-              className="w-full rounded-2xl border border-border bg-background/60 p-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/40 transition-all placeholder:text-muted-foreground/60 resize-none font-normal"
+              className="w-full bg-card resize-none border border-border rounded-md p-3.5 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all shadow-inner leading-relaxed"
             />
           </div>
 
-          {/* Quick Example Chips */}
-          <div className="space-y-1.5">
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
-              Quick Try:
-            </span>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {QUICK_EXAMPLES.map((ex) => (
-                <button
-                  key={ex.label}
-                  type="button"
-                  onClick={() => {
-                    setInputVal(ex.text);
-                    setActiveTab("TEXT");
-                  }}
-                  className="px-2.5 py-1 rounded-lg text-xs font-medium border border-border/80 bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {ex.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Bottom Controls Row: Upload Evidence + Check Claim Button */}
+          <div className="flex items-center justify-between pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("IMAGE");
+                fileInputRef.current?.click();
+              }}
+              className="flex items-center gap-2 font-medium text-muted-foreground hover:text-foreground transition-colors group text-xs"
+            >
+              <div className="w-7 h-7 rounded border border-border flex items-center justify-center bg-card group-hover:border-primary transition-colors shadow-sm">
+                <UploadCloud className="h-3.5 w-3.5 text-foreground" />
+              </div>
+              <span>Upload Evidence</span>
+            </button>
 
-          {/* Submit Button */}
-          <div className="pt-2">
             <button
               type="submit"
               disabled={loading || !inputVal.trim()}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed group active:scale-[0.99]"
+              className="bg-primary text-primary-foreground font-semibold text-xs px-5 py-2 rounded hover:opacity-90 transition-all shadow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>{currentStage || "Verifying with Evidence..."}</span>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  <span>{currentStage || "Analyzing..."}</span>
                 </>
               ) : (
                 <>
-                  <Search className="h-4 w-4" />
-                  <span>Verify Claim Against Evidence</span>
-                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  <Search className="h-3.5 w-3.5" />
+                  <span>Check Claim</span>
                 </>
               )}
             </button>
+          </div>
+
+          {/* Quick Examples */}
+          <div className="pt-2 border-t border-border/60 flex flex-wrap items-center gap-1.5">
+            <span className="font-mono text-[10px] font-bold text-muted-foreground uppercase">
+              Try:
+            </span>
+            {QUICK_EXAMPLES.map((ex) => (
+              <button
+                key={ex.label}
+                type="button"
+                onClick={() => {
+                  setInputVal(ex.text);
+                  setActiveTab("TEXT");
+                }}
+                className="px-2 py-0.5 rounded text-[11px] font-medium border border-border bg-secondary/30 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {ex.label}
+              </button>
+            ))}
           </div>
         </form>
       </div>
@@ -376,42 +387,42 @@ export default function ClaimChecker() {
       {/* Auth Prompt Modal for Guest Limits & Modality Lock */}
       {showAuthModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-2xl space-y-6 relative">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 sm:p-8 shadow-xl space-y-6 relative">
             <button
               onClick={() => setShowAuthModal(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
 
             <div className="text-center space-y-3">
-              <div className="h-12 w-12 rounded-2xl bg-amber-500/10 text-amber-500 mx-auto flex items-center justify-center border border-amber-500/20">
-                <Lock className="h-6 w-6" />
+              <div className="h-10 w-10 rounded-lg bg-secondary text-primary mx-auto flex items-center justify-center border border-border">
+                <Lock className="h-5 w-5" />
               </div>
-              <h3 className="text-xl font-bold tracking-tight text-foreground">
+              <h3 className="text-lg font-bold tracking-tight text-foreground font-sans">
                 {authModalReason === "guest_limit"
                   ? "Free Guest Check Used"
                   : "Sign In Required for This Feature"}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {authModalReason === "guest_limit"
-                  ? "You have completed your 1 free guest fact check. Create a free account or sign in to continue unlimited evidence verification."
-                  : "News URL scraping, Multimodal Image OCR, and WhatsApp forward decomposition require a free account."}
+                  ? "You have completed your free guest fact check. Create a free account or sign in to continue unlimited evidence verification."
+                  : "News URL scraping, Multimodal Image OCR, and WhatsApp forward decomposition require an account."}
               </p>
             </div>
 
-            <div className="space-y-2.5 pt-2">
+            <div className="space-y-2 pt-2">
               <Link
                 href="/sign-up"
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs text-center transition-colors flex items-center justify-center gap-2 shadow-md shadow-emerald-600/25"
+                className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-xs text-center transition-opacity hover:opacity-90 flex items-center justify-center gap-2 shadow-sm"
               >
-                <UserPlus className="h-4 w-4" /> Create Free Account
+                <UserPlus className="h-3.5 w-3.5" /> Create Free Account
               </Link>
               <Link
                 href="/sign-in"
-                className="w-full py-2.5 rounded-xl border border-border bg-secondary hover:bg-secondary/70 text-foreground font-semibold text-xs text-center transition-colors flex items-center justify-center gap-2"
+                className="w-full py-2.5 rounded-lg border border-border bg-secondary hover:bg-secondary/70 text-foreground font-semibold text-xs text-center transition-colors flex items-center justify-center gap-2"
               >
-                <LogIn className="h-4 w-4" /> Sign In to Existing Account
+                <LogIn className="h-3.5 w-3.5" /> Sign In to Existing Account
               </Link>
             </div>
           </div>

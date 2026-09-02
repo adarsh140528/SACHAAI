@@ -105,21 +105,32 @@ export default function CheckResultPage() {
 
   return (
     <div className="container max-w-5xl px-4 py-8 sm:py-12 space-y-8">
-      {/* Top Navigation Row */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={() => router.push("/")}
-          className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" /> Check Another Claim
-        </button>
+      {/* Top Navigation & Report Meta Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push("/")}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-md hover:bg-secondary border border-border"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" /> Back
+          </button>
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <span className="font-bold text-foreground">
+              Investigation #{check.check_id?.slice(0, 8) || "REPORT"}
+            </span>
+            <span className="text-muted-foreground">•</span>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-secondary text-muted-foreground border border-border font-bold">
+              {check.input_type || "TEXT CLAIM"}
+            </span>
+          </div>
+        </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
               if (navigator.clipboard) {
                 navigator.clipboard.writeText(window.location.href);
-                alert("Verification report URL copied to clipboard!");
+                alert("Investigation report URL copied to clipboard!");
               }
             }}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold hover:bg-secondary transition-colors"
@@ -129,50 +140,89 @@ export default function CheckResultPage() {
         </div>
       </div>
 
-      {/* Hero Verdict Banner */}
-      <div className="rounded-xl border border-border bg-card p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
-          <div className="flex items-center gap-4">
-            {getVerdictIcon(verdict)}
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                Deterministic Verdict
-              </div>
-              <div className="text-3xl font-extrabold tracking-tight text-foreground">
-                {verdict}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className={`px-3 py-1 rounded-md text-xs font-bold border ${getConfidenceBadgeClass(confidence)}`}>
-              {confidence} CONFIDENCE
+      {/* Hero Verdict Banner (Stitch Spec) */}
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="border-b border-border bg-secondary/30 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span
+              className="px-3.5 py-1 rounded-full font-mono text-xs font-extrabold tracking-wider border"
+              style={{
+                backgroundColor:
+                  verdict === "TRUE"
+                    ? "rgba(21, 128, 61, 0.1)"
+                    : verdict === "FALSE"
+                    ? "rgba(220, 38, 38, 0.1)"
+                    : verdict === "MISLEADING"
+                    ? "rgba(217, 119, 6, 0.1)"
+                    : "rgba(100, 116, 139, 0.1)",
+                color:
+                  verdict === "TRUE"
+                    ? "#15803D"
+                    : verdict === "FALSE"
+                    ? "#DC2626"
+                    : verdict === "MISLEADING"
+                    ? "#D97706"
+                    : "#64748B",
+                borderColor:
+                  verdict === "TRUE"
+                    ? "rgba(21, 128, 61, 0.2)"
+                    : verdict === "FALSE"
+                    ? "rgba(220, 38, 38, 0.2)"
+                    : verdict === "MISLEADING"
+                    ? "rgba(217, 119, 6, 0.2)"
+                    : "rgba(100, 116, 139, 0.2)",
+              }}
+            >
+              VERDICT: {verdict}
+            </span>
+            <span className="font-mono text-xs text-muted-foreground">
+              Confidence: <strong className="text-foreground font-semibold">{confidence}</strong>
             </span>
           </div>
-        </div>
 
-        {/* Claim Text */}
-        <div className="space-y-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Subject Assertion Under Verification
-          </span>
-          <p className="text-base sm:text-lg font-semibold text-foreground leading-snug">
-            &ldquo;{check.raw_input}&rdquo;
-          </p>
-        </div>
-
-        {/* 4-Part Editorial "Why this verdict?" Section */}
-        <div className="p-5 rounded-lg border border-border bg-secondary/30 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
-            <ShieldCheck className="h-4 w-4" /> Investigation Summary & Evidence Rationale
+          <div className="flex items-center gap-4 font-mono text-[11px] text-muted-foreground">
+            <span>AUDIT TIME: {check.processing_time_ms || 120}ms</span>
+            <span>SOURCES: {allEvidence.length}</span>
           </div>
-          <p className="text-xs sm:text-sm text-foreground leading-relaxed whitespace-pre-line">
-            {reasoning}
-          </p>
+        </div>
+
+        <div className="p-6 sm:p-8 space-y-6">
+          {/* Claim Analyzed Quote Box */}
+          <div className="space-y-2">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+              Claim Analyzed
+            </span>
+            <p
+              className="text-base sm:text-lg font-medium italic border-l-4 pl-4 py-1 text-foreground leading-relaxed"
+              style={{
+                borderColor:
+                  verdict === "TRUE"
+                    ? "#15803D"
+                    : verdict === "FALSE"
+                    ? "#DC2626"
+                    : verdict === "MISLEADING"
+                    ? "#D97706"
+                    : "#64748B",
+              }}
+            >
+              &ldquo;{check.raw_input}&rdquo;
+            </p>
+          </div>
+
+          {/* Forensic Evidence Rationale */}
+          <div className="p-5 rounded-lg border border-border bg-secondary/20 space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary font-mono">
+              <ShieldCheck className="h-4 w-4 text-accent-blue" />
+              <span>Forensic Verification Analysis</span>
+            </div>
+            <p className="text-xs sm:text-sm text-foreground leading-relaxed whitespace-pre-line">
+              {reasoning}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Interactive Evidence Graph */}
+      {/* Interactive SVG Evidence Graph */}
       <EvidenceGraph
         claimText={check.raw_input}
         verdict={verdict}
@@ -180,82 +230,44 @@ export default function CheckResultPage() {
         evidenceItems={allEvidence}
       />
 
-      {/* Evaluated Evidence Sources */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold tracking-tight text-foreground">
-            Evaluated Primary Citations ({allEvidence.length})
-          </h3>
-          <span className="text-xs text-muted-foreground font-mono">
-            Ranked by Source Reliability Weight
-          </span>
+      {/* Methodology Banner */}
+      <div className="rounded-xl border border-border bg-secondary/30 p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-md bg-primary text-primary-foreground flex items-center justify-center">
+            <ShieldCheck className="h-4 w-4" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-foreground font-sans">
+              SACHLAI Verification Methodology
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Review our 11-stage pipeline, source credibility ranking, and clustering algorithms.
+            </p>
+          </div>
         </div>
-
-        <div className="space-y-3">
-          {allEvidence.map((ev: any, idx: number) => {
-            const relBadgeClass = getVerdictBadgeClass(
-              ev.relationship === "SUPPORTS" ? "TRUE" : ev.relationship === "CONTRADICTS" ? "FALSE" : "MISLEADING"
-            );
-            return (
-              <div
-                key={idx}
-                className="rounded-lg border border-border bg-card p-4 space-y-2.5 shadow-sm"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
-                    <span className="font-bold text-xs text-foreground">{ev.publisher}</span>
-                    <span className="text-[11px] font-mono text-muted-foreground">({ev.domain})</span>
-                    <span className="text-[9px] font-semibold px-2 py-0.5 rounded border border-border bg-secondary text-muted-foreground uppercase">
-                      {ev.source_type?.replace("TIER_", "Tier ")}
-                    </span>
-                  </div>
-
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold border ${relBadgeClass}`}>
-                    {ev.relationship}
-                  </span>
-                </div>
-
-                <p className="text-xs text-foreground/90 leading-relaxed bg-secondary/30 p-3 rounded border border-border/60">
-                  &ldquo;{ev.evidence_text}&rdquo;
-                </p>
-
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
-                  <div className="flex items-center gap-4">
-                    <span>Reliability: <strong className="text-foreground">{Math.round(ev.reliability_score * 100)}%</strong></span>
-                    <span>Relevance: <strong className="text-foreground">{Math.round(ev.relevance_score * 100)}%</strong></span>
-                  </div>
-                  <a
-                    href={ev.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary hover:underline font-semibold inline-flex items-center gap-1"
-                  >
-                    <span>Inspect Source</span>
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <Link
+          href="/developers"
+          className="px-4 py-2 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-semibold text-foreground transition-colors shrink-0"
+        >
+          View Documentation →
+        </Link>
       </div>
 
       {/* Metadata & Feedback Footer */}
-      <div className="rounded-lg border border-border bg-card p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+      <div className="rounded-lg border border-border bg-card p-4 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground font-mono">
         <div className="space-y-0.5 text-center sm:text-left">
-          <div>Verification ID: <span className="font-mono text-foreground">{check.check_id}</span></div>
-          <div>Completed at: <span className="text-foreground">{formatDate(check.completed_at || check.created_at)}</span> ({check.processing_time_ms}ms)</div>
+          <div>Report Hash: <span className="text-foreground">{check.check_id}</span></div>
+          <div>Verified: <span className="text-foreground">{formatDate(check.completed_at || check.created_at)}</span></div>
         </div>
 
         {/* Feedback Widget */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Was this report useful?</span>
+          <span className="text-xs text-muted-foreground font-sans">Helpful report?</span>
           <button
             onClick={() => handleFeedback(true)}
             className={`p-1.5 rounded border transition-all ${
               feedbackSent === true
-                ? "bg-emerald-600 text-white border-emerald-600"
+                ? "bg-verdict-true text-white border-verdict-true"
                 : "bg-card hover:bg-secondary border-border text-muted-foreground"
             }`}
             title="Accurate"
@@ -266,7 +278,7 @@ export default function CheckResultPage() {
             onClick={() => handleFeedback(false)}
             className={`p-1.5 rounded border transition-all ${
               feedbackSent === false
-                ? "bg-rose-600 text-white border-rose-600"
+                ? "bg-verdict-false text-white border-verdict-false"
                 : "bg-card hover:bg-secondary border-border text-muted-foreground"
             }`}
             title="Inaccurate"

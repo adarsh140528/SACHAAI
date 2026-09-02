@@ -3,48 +3,64 @@
 @tailwind utilities;
 
 :root {
-  --background: 210 20% 98%;      /* #F8FAFC */
-  --foreground: 222 47% 11%;      /* #0B1220 */
-  --card: 0 0% 100%;              /* #FFFFFF */
+  --background: 210 20% 98%;           /* #F8F9FB neutral canvas */
+  --foreground: 222 47% 11%;           /* #0B1220 dark ink */
+  --card: 0 0% 100%;                   /* #FFFFFF pure white card */
   --card-foreground: 222 47% 11%;
   --popover: 0 0% 100%;
   --popover-foreground: 222 47% 11%;
-  --primary: 221 83% 53%;         /* Trust Blue #2563EB */
-  --primary-foreground: 210 40% 98%;
-  --secondary: 214 32% 91%;       /* Clean slate tint #E2E8F0 */
+  --primary: 222 47% 11%;              /* Dark Ink authoritative #0B1220 */
+  --primary-foreground: 0 0% 100%;
+  --primary-container: 220 33% 12%;
+  --secondary: 214 20% 95%;            /* #F0F1F3 */
   --secondary-foreground: 222 47% 11%;
-  --muted: 214 32% 91%;
-  --muted-foreground: 215 16% 47%;/* #64748B */
-  --accent: 221 83% 53%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 84% 60%;       /* #DC2626 */
-  --destructive-foreground: 210 40% 98%;
-  --border: 214 32% 91%;          /* #E2E8F0 */
+  --muted: 214 20% 95%;
+  --muted-foreground: 215 16% 47%;     /* #64748B */
+  --accent: 221 83% 53%;              /* #2563EB */
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;            /* #DC2626 */
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 32% 91%;               /* #E2E8F0 */
   --input: 214 32% 91%;
   --ring: 221 83% 53%;
-  --radius: 0.5rem;               /* 8px moderate radius */
+  --surface-bright: 0 0% 100%;
+  --surface-container-low: 210 20% 98%;
+  --surface-container: 214 20% 95%;
+  --surface-container-high: 214 20% 92%;
+  --surface-container-highest: 214 20% 89%;
+  --surface-variant: 214 20% 89%;
+  --surface-tint: 220 12% 39%;
+  --radius: 0.5rem;                    /* 8px restrained radius */
 }
 
 .dark {
-  --background: 222 47% 8%;       /* Deep Dark Navy #0B1220 */
-  --foreground: 210 40% 98%;      /* #F8FAFC */
-  --card: 222 47% 10%;           /* #0F172A */
-  --card-foreground: 210 40% 98%;
+  --background: 222 47% 7%;            /* #070B14 deep ink */
+  --foreground: 210 20% 98%;           /* #F8F9FB */
+  --card: 222 47% 10%;                 /* #0F172A */
+  --card-foreground: 210 20% 98%;
   --popover: 222 47% 10%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 221 83% 53%;         /* #2563EB */
-  --primary-foreground: 210 40% 98%;
-  --secondary: 217 33% 17%;       /* #1E293B */
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 65%;/* #94A3B8 */
+  --popover-foreground: 210 20% 98%;
+  --primary: 221 83% 53%;              /* #2563EB */
+  --primary-foreground: 0 0% 100%;
+  --primary-container: 222 47% 14%;
+  --secondary: 217 33% 16%;            /* #1E293B */
+  --secondary-foreground: 210 20% 98%;
+  --muted: 217 33% 16%;
+  --muted-foreground: 215 20% 65%;     /* #94A3B8 */
   --accent: 221 83% 53%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 72% 51%;       /* #DC2626 */
-  --destructive-foreground: 210 40% 98%;
-  --border: 217 33% 17%;          /* #1E293B */
-  --input: 217 33% 17%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;            /* #DC2626 */
+  --destructive-foreground: 0 0% 100%;
+  --border: 217 33% 18%;               /* #1E293B */
+  --input: 217 33% 18%;
   --ring: 221 83% 53%;
+  --surface-bright: 222 47% 13%;
+  --surface-container-low: 222 47% 9%;
+  --surface-container: 222 47% 12%;
+  --surface-container-high: 222 47% 15%;
+  --surface-container-highest: 222 47% 18%;
+  --surface-variant: 222 47% 18%;
+  --surface-tint: 221 83% 53%;
 }
 
 * {
@@ -90,6 +106,32 @@ body {
 
 .animate-pulse-subtle {
   animation: pulse-subtle 4s ease-in-out infinite;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+.animate-dash {
+  animation: dash 20s linear infinite;
+}
+
+/* Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
 }
 
 /* Reduced Motion Support */

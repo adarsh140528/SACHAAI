@@ -301,7 +301,7 @@ c:\Users\Adarsh\Downloads\SACHAAI/
 │   ├── tests/ (unit, integration, security)
 │   └── requirements.txt
 ├── frontend/
-│   ├── app/ (page, check/[id], dashboard, history, saved, developers, pricing, changelog, sign-in, sign-up, demo)
+│   ├── app/ (page, check/[id], dashboard, history, saved, developers, changelog, sign-in, sign-up, demo)
 │   ├── components/ (checker, verdict, evidence, graph, dashboard, layout, ui)
 │   ├── lib/ (api, auth, utils)
 │   ├── types/

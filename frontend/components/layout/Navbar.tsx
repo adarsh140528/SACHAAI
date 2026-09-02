@@ -19,12 +19,20 @@ import { useState, useEffect } from "react";
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState<string>("");
 
   useEffect(() => {
-    document.documentElement.classList.add("dark");
+    // Check saved theme or default to light
+    const savedTheme = localStorage.getItem("sachai_theme");
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+      setIsDark(true);
+    } else {
+      document.documentElement.classList.remove("dark");
+      setIsDark(false);
+    }
     checkAuthStatus();
     
     // Listen for storage events (login/logout across tabs)
@@ -66,9 +74,11 @@ export default function Navbar() {
   const toggleTheme = () => {
     if (isDark) {
       document.documentElement.classList.remove("dark");
+      localStorage.setItem("sachai_theme", "light");
       setIsDark(false);
     } else {
       document.documentElement.classList.add("dark");
+      localStorage.setItem("sachai_theme", "dark");
       setIsDark(true);
     }
   };
@@ -80,11 +90,10 @@ export default function Navbar() {
         { href: "/dashboard", label: "Dashboard" },
         { href: "/history", label: "History" },
         { href: "/developers", label: "API & Devs" },
-        { href: "/pricing", label: "Pricing" },
       ]
     : [
         { href: "/", label: "Verify Claim" },
-        { href: "/pricing", label: "Pricing" },
+        { href: "/developers", label: "API & Devs" },
       ];
 
   return (
@@ -92,15 +101,20 @@ export default function Navbar() {
       <div className="container flex h-14 max-w-7xl items-center justify-between px-4 sm:px-8">
         {/* Minimal Geometric Brand Mark */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-sm group-hover:bg-primary/90 transition-colors">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm group-hover:opacity-90 transition-opacity">
             <ShieldCheck className="h-4 w-4" />
           </div>
           <div className="flex flex-col">
-            <span className="text-base font-extrabold tracking-tight text-foreground">
-              SACHAI<span className="text-primary">.AI</span>
-            </span>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest -mt-1">
-              Evidence Engine
+            <div className="flex items-center">
+              <span className="text-base font-extrabold tracking-tight text-foreground font-sans">
+                SACHLAI
+              </span>
+              <span className="text-xs font-bold text-accent-blue font-mono ml-0.5">
+                .AI
+              </span>
+            </div>
+            <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest -mt-1 font-mono">
+              Fact-First Engine
             </span>
           </div>
         </Link>
@@ -113,9 +127,9 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                className={`relative px-3.5 py-1.5 text-xs font-medium tracking-wide transition-colors ${
                   isActive
-                    ? "text-primary"
+                    ? "text-primary font-semibold"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
