@@ -1,13 +1,16 @@
 import os
 import time
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.app.core.config import settings
 from backend.app.core.logging import logger
-from backend.app.db.session import init_db
+from backend.app.db.session import init_db, get_db
+from backend.app.models.user import User
+from backend.app.api.routes.auth import require_auth
 from backend.app.api.routes.health import router as health_router
 from backend.app.api.routes.auth import router as auth_router
 from backend.app.api.routes.checks import router as checks_router
@@ -75,17 +78,19 @@ app.include_router(demo_router, prefix=settings.API_V1_STR)
 # Aliases for Section 35/36 spec compatibility
 @app.post("/v1/check", tags=["Public API"])
 @app.post("/api/v1/check", tags=["Public API"])
-async def public_check_endpoint(req: dict):
+async def public_check_endpoint(
+    req: dict,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_auth)
+):
     # Public API endpoint redirect to checks
     from backend.app.schemas.check import CheckCreateRequest
     from backend.app.api.routes.checks import create_and_run_check
-    from backend.app.db.session import AsyncSessionLocal
-    async with AsyncSessionLocal() as session:
-        check_req = CheckCreateRequest(
-            input=req.get("input", ""),
-            input_type=req.get("input_type", "TEXT")
-        )
-        return await create_and_run_check(check_req, session)
+    check_req = CheckCreateRequest(
+        input=req.get("input", ""),
+        input_type=req.get("input_type", "TEXT")
+    )
+    return await create_and_run_check(check_req, db, current_user)
 
 @app.get("/")
 async def root():

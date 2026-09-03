@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -19,7 +20,8 @@ import {
   X,
   Lock,
   UserPlus,
-  LogIn
+  LogIn,
+  Shield
 } from "lucide-react";
 import { submitCheck } from "@/lib/api";
 
@@ -43,25 +45,23 @@ export default function ClaimChecker() {
   const [currentStage, setCurrentStage] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   
-  // Auth & Guest restriction state
+  // Auth state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [guestChecksCount, setGuestChecksCount] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authModalReason, setAuthModalReason] = useState<"guest_limit" | "modality_lock">("guest_limit");
+  const [authModalReason, setAuthModalReason] = useState<string>("Verification requires an account");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== "undefined") {
       const token = localStorage.getItem("sachai_token");
       setIsLoggedIn(!!token);
-
-      const guestChecks = parseInt(localStorage.getItem("sachai_guest_checks") || "0", 10);
-      setGuestChecksCount(guestChecks);
     }
   }, []);
 
   const handleTabChange = (tab: "TEXT" | "URL" | "IMAGE" | "WHATSAPP") => {
     if (!isLoggedIn && tab !== "TEXT") {
-      setAuthModalReason("modality_lock");
+      setAuthModalReason("News URL verification, Image OCR, and WhatsApp analysis require an account.");
       setShowAuthModal(true);
       return;
     }
@@ -71,7 +71,7 @@ export default function ClaimChecker() {
 
   const handleFileSelect = async (file: File) => {
     if (!isLoggedIn) {
-      setAuthModalReason("modality_lock");
+      setAuthModalReason("Uploading image evidence and multimodal OCR requires signing in.");
       setShowAuthModal(true);
       return;
     }
@@ -87,8 +87,10 @@ export default function ClaimChecker() {
       formData.append("file", file);
 
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const token = localStorage.getItem("sachai_token");
       const res = await fetch(`${API_URL}/api/v1/uploads`, {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
       });
 
@@ -116,23 +118,17 @@ export default function ClaimChecker() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputVal.trim()) {
-      setErrorMsg("Please enter a claim, URL, or statement to verify.");
+
+    // STRICT: Require authentication before running ANY fact-check
+    if (!isLoggedIn) {
+      setAuthModalReason("Please sign in or create an account to run factual verifications.");
+      setShowAuthModal(true);
       return;
     }
 
-    // Guest 1-check limit enforcement
-    if (!isLoggedIn) {
-      if (activeTab !== "TEXT") {
-        setAuthModalReason("modality_lock");
-        setShowAuthModal(true);
-        return;
-      }
-      if (guestChecksCount >= 1) {
-        setAuthModalReason("guest_limit");
-        setShowAuthModal(true);
-        return;
-      }
+    if (!inputVal.trim()) {
+      setErrorMsg("Please enter a claim, URL, or statement to verify.");
+      return;
     }
 
     setLoading(true);
@@ -155,15 +151,6 @@ export default function ClaimChecker() {
 
       clearTimeout(progressTimer);
       clearTimeout(progressTimer2);
-
-      // Increment guest checks count if anonymous
-      if (!isLoggedIn) {
-        const newCount = guestChecksCount + 1;
-        setGuestChecksCount(newCount);
-        if (typeof window !== "undefined") {
-          localStorage.setItem("sachai_guest_checks", newCount.toString());
-        }
-      }
 
       router.push(`/check/${data.check_id}`);
     } catch (err: any) {
@@ -236,22 +223,27 @@ export default function ClaimChecker() {
 
           <div className="flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
             <span className="h-1.5 w-1.5 rounded-full bg-verdict-true animate-pulse" />
-            <span>SACHLAI v2.1</span>
+            <span>SACHAI v2.1</span>
           </div>
         </div>
 
-        {/* Guest 1-Check Banner */}
+        {/* Auth Required Notification Banner */}
         {!isLoggedIn && (
-          <div className="flex items-center justify-between px-4 py-2 bg-secondary/30 border-b border-border text-[11px] text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-              <span>
-                Guest Mode: <strong>{1 - Math.min(guestChecksCount, 1)} free text check remaining</strong>
+          <div className="flex items-center justify-between px-4 py-2.5 bg-accent-blue/10 border-b border-accent-blue/20 text-xs text-foreground">
+            <div className="flex items-center gap-2">
+              <Lock className="h-3.5 w-3.5 text-accent-blue shrink-0" />
+              <span className="text-[11px] text-muted-foreground">
+                <strong className="text-foreground">Sign in required:</strong> Create an account or sign in to verify claims and inspect evidence.
               </span>
             </div>
-            <Link href="/sign-up" className="text-accent-blue font-semibold hover:underline flex items-center gap-0.5">
-              Sign up <ArrowRight className="h-2.5 w-2.5" />
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href="/sign-in" className="text-[11px] font-semibold text-muted-foreground hover:text-foreground">
+                Sign in
+              </Link>
+              <Link href="/sign-up" className="text-[11px] font-bold text-accent-blue hover:underline flex items-center gap-0.5">
+                Sign up <ArrowRight className="h-2.5 w-2.5" />
+              </Link>
+            </div>
           </div>
         )}
 
@@ -294,7 +286,14 @@ export default function ClaimChecker() {
                 </div>
               ) : (
                 <div
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      setAuthModalReason("Uploading image evidence and multimodal OCR requires signing in.");
+                      setShowAuthModal(true);
+                      return;
+                    }
+                    fileInputRef.current?.click();
+                  }}
                   className="cursor-pointer border border-dashed border-border hover:border-accent-blue rounded-md p-4 text-center space-y-1.5 bg-secondary/20 hover:bg-secondary/40 transition-colors"
                 >
                   <div className="h-8 w-8 rounded bg-card text-primary mx-auto flex items-center justify-center border border-border shadow-sm">
@@ -320,7 +319,7 @@ export default function ClaimChecker() {
                   : activeTab === "IMAGE"
                   ? "Transcribed text from image appears here, or type extra context..."
                   : activeTab === "WHATSAPP"
-                  ? "Paste entire forwarded WhatsApp message here. SACHLAI will decompose claims..."
+                  ? "Paste entire forwarded WhatsApp message here. SACHAI will decompose claims..."
                   : "Paste a claim, forward, or statement here to begin forensic analysis..."
               }
               className="w-full bg-card resize-none border border-border rounded-md p-3.5 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-accent-blue focus:ring-2 focus:ring-accent-blue/20 transition-all shadow-inner leading-relaxed"
@@ -332,6 +331,11 @@ export default function ClaimChecker() {
             <button
               type="button"
               onClick={() => {
+                if (!isLoggedIn) {
+                  setAuthModalReason("Uploading image evidence requires signing in.");
+                  setShowAuthModal(true);
+                  return;
+                }
                 setActiveTab("IMAGE");
                 fileInputRef.current?.click();
               }}
@@ -384,49 +388,70 @@ export default function ClaimChecker() {
         </form>
       </div>
 
-      {/* Auth Prompt Modal for Guest Limits & Modality Lock */}
-      {showAuthModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 sm:p-8 shadow-xl space-y-6 relative">
+      {/* Global Full-Screen Auth Prompt Modal (Rendered to body via createPortal) */}
+      {mounted && showAuthModal && createPortal(
+        <div
+          className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-200"
+          onClick={() => setShowAuthModal(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-2xl space-y-6 relative animate-in zoom-in-95 duration-200"
+            style={{ backgroundColor: "hsl(var(--card))" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
             <button
               onClick={() => setShowAuthModal(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+              className="absolute top-4 right-4 p-2 rounded-lg border border-border bg-secondary/50 hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+              title="Close modal"
             >
               <X className="h-4 w-4" />
             </button>
 
-            <div className="text-center space-y-3">
-              <div className="h-10 w-10 rounded-lg bg-secondary text-primary mx-auto flex items-center justify-center border border-border">
-                <Lock className="h-5 w-5" />
+            {/* Modal Header & Icon */}
+            <div className="text-center space-y-3 pt-2">
+              <div className="h-14 w-14 rounded-2xl bg-accent-blue/10 text-accent-blue mx-auto flex items-center justify-center border border-accent-blue/20 shadow-inner">
+                <Lock className="h-7 w-7" />
               </div>
-              <h3 className="text-lg font-bold tracking-tight text-foreground font-sans">
-                {authModalReason === "guest_limit"
-                  ? "Free Guest Check Used"
-                  : "Sign In Required for This Feature"}
-              </h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {authModalReason === "guest_limit"
-                  ? "You have completed your free guest fact check. Create a free account or sign in to continue unlimited evidence verification."
-                  : "News URL scraping, Multimodal Image OCR, and WhatsApp forward decomposition require an account."}
-              </p>
+              
+              <div className="space-y-1">
+                <h3 className="text-xl font-extrabold tracking-tight text-foreground font-sans">
+                  Sign In Required to Verify Facts
+                </h3>
+                <p className="text-xs text-muted-foreground leading-relaxed max-w-xs mx-auto">
+                  {authModalReason || "Please sign in or create an account to run factual verifications."}
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-2 pt-2">
+            {/* Action Buttons */}
+            <div className="space-y-2.5 pt-1">
               <Link
                 href="/sign-up"
-                className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-xs text-center transition-opacity hover:opacity-90 flex items-center justify-center gap-2 shadow-sm"
+                className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs text-center transition-all hover:opacity-90 flex items-center justify-center gap-2 shadow-md shadow-primary/10"
               >
-                <UserPlus className="h-3.5 w-3.5" /> Create Free Account
+                <UserPlus className="h-4 w-4" />
+                <span>Create Free Account</span>
               </Link>
               <Link
                 href="/sign-in"
-                className="w-full py-2.5 rounded-lg border border-border bg-secondary hover:bg-secondary/70 text-foreground font-semibold text-xs text-center transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl border border-border bg-secondary/60 hover:bg-secondary text-foreground font-bold text-xs text-center transition-colors flex items-center justify-center gap-2"
               >
-                <LogIn className="h-3.5 w-3.5" /> Sign In to Existing Account
+                <LogIn className="h-4 w-4" />
+                <span>Sign In to Existing Account</span>
               </Link>
             </div>
+
+            {/* Trust Footer */}
+            <div className="pt-2 border-t border-border/60 text-center">
+              <p className="text-[10px] font-mono text-muted-foreground flex items-center justify-center gap-1.5">
+                <ShieldCheck className="h-3.5 w-3.5 text-verdict-true" />
+                <span>Verifiable primary records • IFCN certified • Free access</span>
+              </p>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

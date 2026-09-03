@@ -238,7 +238,7 @@ export default function CheckResultPage() {
           </div>
           <div>
             <h4 className="text-sm font-bold text-foreground font-sans">
-              SACHLAI Verification Methodology
+              SACHAI Verification Methodology
             </h4>
             <p className="text-xs text-muted-foreground">
               Review our 11-stage pipeline, source credibility ranking, and clustering algorithms.

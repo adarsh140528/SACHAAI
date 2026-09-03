@@ -22,7 +22,7 @@ from backend.app.schemas.check import (
     FactCheckSchema,
 )
 from backend.app.services.pipeline import verification_pipeline
-from backend.app.api.routes.auth import get_current_user
+from backend.app.api.routes.auth import get_current_user, require_auth
 from backend.app.core.logging import logger
 
 router = APIRouter(prefix="/checks", tags=["Verification"])
@@ -96,7 +96,7 @@ def _build_check_response(check: Check) -> CheckResponse:
 async def create_and_run_check(
     req: CheckCreateRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: Optional[User] = Depends(get_current_user)
+    current_user: User = Depends(require_auth)
 ):
     if not req.input or not req.input.strip():
         raise HTTPException(

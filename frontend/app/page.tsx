@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ShieldCheck,
@@ -22,13 +23,42 @@ import {
   Layers,
   Activity,
   Check,
-  XCircle
+  XCircle,
+  BarChart2,
+  History,
+  Terminal,
+  UserCheck
 } from "lucide-react";
 import ClaimChecker from "@/components/checker/ClaimChecker";
 import EvidenceOrbit3D from "@/components/landing/EvidenceOrbit3D";
 import InputShowcase from "@/components/landing/InputShowcase";
 
 export default function HomePage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState("");
+
+  useEffect(() => {
+    const checkAuth = () => {
+      if (typeof window !== "undefined") {
+        const token = localStorage.getItem("sachai_token");
+        const userRaw = localStorage.getItem("sachai_user");
+        setIsLoggedIn(!!token);
+        if (userRaw) {
+          try {
+            const u = JSON.parse(userRaw);
+            setUserName(u.full_name || u.email?.split("@")[0] || "Analyst");
+          } catch {
+            setUserName("Analyst");
+          }
+        }
+      }
+    };
+
+    checkAuth();
+    window.addEventListener("storage", checkAuth);
+    return () => window.removeEventListener("storage", checkAuth);
+  }, []);
+
   const scrollToChecker = () => {
     const el = document.getElementById("verify-input");
     if (el) {
@@ -39,54 +69,108 @@ export default function HomePage() {
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* 2-Column Editorial Hero Section (Exact Stitch Spec) */}
-      <section className="relative pt-10 sm:pt-16 pb-16 sm:pb-20 border-b border-border bg-background overflow-hidden">
+      {/* Investigation Section (Adaptive: Pro Workbench after Login / 2-Column Hero before Login) */}
+      <section className="relative pt-8 sm:pt-12 pb-14 sm:pb-16 border-b border-border bg-background overflow-hidden">
         {/* Subtle Fine Grid Texture */}
         <div className="absolute inset-0 bg-fine-grid opacity-40 pointer-events-none" />
 
-        <div className="container max-w-container-max mx-auto px-4 sm:px-8 flex flex-col lg:flex-row gap-12 items-center relative z-10">
-          {/* Left Column: Headline & Value Proposition */}
-          <div className="flex-1 flex flex-col gap-4 relative z-20 text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-secondary w-max rounded-full border border-border shadow-sm mb-2">
-              <span className="w-2 h-2 rounded-full bg-verdict-true animate-pulse" />
-              <span className="font-mono text-[11px] font-semibold text-foreground uppercase tracking-widest">
-                v2.1 Verification Engine Online
-              </span>
+        <div className="container max-w-container-max mx-auto px-4 sm:px-8 relative z-10">
+          {isLoggedIn ? (
+            /* Logged In: Streamlined Pro Investigation Workstation */
+            <div className="max-w-4xl mx-auto space-y-6">
+              {/* Pro Workspace Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-5">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-verdict-true animate-pulse" />
+                    <span className="font-mono text-[11px] font-bold text-accent-blue uppercase tracking-wider">
+                      Forensic Investigation Workspace
+                    </span>
+                    <span className="text-border">•</span>
+                    <span className="text-xs font-semibold text-foreground flex items-center gap-1">
+                      <UserCheck className="h-3.5 w-3.5 text-verdict-true" /> {userName}
+                    </span>
+                  </div>
+                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground font-sans">
+                    New Claim Investigation
+                  </h1>
+                  <p className="text-xs text-muted-foreground">
+                    Submit text claims, OCR screenshots, news URLs, or WhatsApp forwards for automated 11-stage verification.
+                  </p>
+                </div>
+
+                {/* Quick Navigation Shortcuts */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link
+                    href="/dashboard"
+                    className="px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-semibold text-foreground transition-colors inline-flex items-center gap-1.5 shadow-sm"
+                  >
+                    <BarChart2 className="h-3.5 w-3.5 text-accent-blue" />
+                    <span>Dashboard</span>
+                  </Link>
+                  <Link
+                    href="/history"
+                    className="px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-semibold text-foreground transition-colors inline-flex items-center gap-1.5 shadow-sm"
+                  >
+                    <History className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>History</span>
+                  </Link>
+                  <Link
+                    href="/developers"
+                    className="px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-semibold text-foreground transition-colors inline-flex items-center gap-1.5 shadow-sm"
+                  >
+                    <Terminal className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span>API</span>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Full Width Centered Claim Checker */}
+              <div className="w-full">
+                <ClaimChecker />
+              </div>
             </div>
+          ) : (
+            /* Logged Out: 2-Column Editorial Landing Hero */
+            <div className="flex flex-col lg:flex-row gap-12 items-center">
+              {/* Left Column: Headline & Value Proposition */}
+              <div className="flex-1 flex flex-col gap-4 relative z-20 text-left">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-secondary w-max rounded-full border border-border shadow-sm mb-2">
+                  <span className="w-2 h-2 rounded-full bg-verdict-true animate-pulse" />
+                  <span className="font-mono text-[11px] font-semibold text-foreground uppercase tracking-widest">
+                    v2.1 Verification Engine Online
+                  </span>
+                </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-[60px] leading-[1.1] font-extrabold text-foreground tracking-tight font-sans">
-              Don&apos;t just believe it.<br />
-              <span className="text-accent-blue relative inline-block">
-                Verify it.
-                <span className="absolute bottom-1 left-0 w-full h-1 bg-accent-blue/30 -z-10 transform -skew-x-12" />
-              </span>
-            </h1>
+                <h1 className="text-4xl sm:text-5xl lg:text-[60px] leading-[1.1] font-extrabold text-foreground tracking-tight font-sans">
+                  Don&apos;t just believe it.<br />
+                  <span className="text-accent-blue relative inline-block">
+                    Verify it.
+                    <span className="absolute bottom-1 left-0 w-full h-1 bg-accent-blue/30 -z-10 transform -skew-x-12" />
+                  </span>
+                </h1>
 
-            <p className="text-base sm:text-lg text-muted-foreground max-w-xl mt-2 leading-relaxed">
-              Verify claims, news, images and forwards using evidence from trusted sources. The gold standard in algorithmic verification.
-            </p>
+                <p className="text-base sm:text-lg text-muted-foreground max-w-xl mt-2 leading-relaxed">
+                  Verify claims, news, images and forwards using evidence from trusted sources. The gold standard in algorithmic verification.
+                </p>
 
-            <div className="mt-4 flex items-center gap-3">
-              <button
-                onClick={scrollToChecker}
-                className="bg-primary text-primary-foreground font-semibold text-xs px-6 py-3 rounded-lg hover:opacity-90 transition-all shadow-md shadow-primary/10 flex items-center gap-2 group"
-              >
-                <span>Start Investigation</span>
-                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-              </button>
-              <a
-                href="#methodology"
-                className="px-5 py-3 rounded-lg border border-border bg-card hover:bg-secondary text-foreground font-semibold text-xs transition-colors"
-              >
-                Our Methodology
-              </a>
+                <div className="mt-4 flex items-center gap-3">
+                  <button
+                    onClick={scrollToChecker}
+                    className="bg-primary text-primary-foreground font-semibold text-xs px-6 py-3 rounded-lg hover:opacity-90 transition-all shadow-md shadow-primary/10 flex items-center gap-2 group"
+                  >
+                    <span>Start Investigation</span>
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Column: Ingestion Centerpiece */}
+              <div className="flex-1 w-full relative z-10 flex justify-end">
+                <ClaimChecker />
+              </div>
             </div>
-          </div>
-
-          {/* Right Column: Ingestion Centerpiece */}
-          <div className="flex-1 w-full relative z-10 flex justify-end">
-            <ClaimChecker />
-          </div>
+          )}
         </div>
       </section>
 
@@ -97,9 +181,6 @@ export default function HomePage() {
             {/* Left Column: 3-Step Methodology Thread */}
             <div className="flex flex-col gap-5">
               <div className="space-y-2">
-                <span className="text-[11px] font-bold uppercase tracking-widest text-accent-blue font-mono">
-                  Methodology
-                </span>
                 <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground font-sans">
                   Evidence over guesswork.
                 </h2>
@@ -205,30 +286,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Trust & Source Reliability Strip */}
-      <section className="border-b border-border bg-secondary/30 py-6">
-        <div className="container max-w-container-max px-4 sm:px-8 mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center sm:text-left">
-            <div className="space-y-0.5 border-r border-border/60 last:border-r-0 pr-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary font-mono">Tier 1 Primary</span>
-              <p className="text-xs font-semibold text-foreground">Government Gazettes & Statutory Bodies</p>
-            </div>
-            <div className="space-y-0.5 border-r border-border/60 last:border-r-0 pr-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary font-mono">Tier 2 News</span>
-              <p className="text-xs font-semibold text-foreground">Established Wire Services (Reuters, AP, PTI)</p>
-            </div>
-            <div className="space-y-0.5 border-r border-border/60 last:border-r-0 pr-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary font-mono">Tier 3 Fact-Checks</span>
-              <p className="text-xs font-semibold text-foreground">IFCN Certified Fact Checkers (AltNews, Boom)</p>
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary font-mono">Clustering</span>
-              <p className="text-xs font-semibold text-foreground">Syndication Deduplication (10 Reprints = 1)</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* 3D Visual Provenance Section */}
       <section className="py-16 bg-background border-b border-border">
         <div className="container max-w-6xl px-4 sm:px-8 mx-auto space-y-4">
@@ -254,26 +311,7 @@ export default function HomePage() {
           <InputShowcase />
         </div>
       </section>
-
-      {/* Final Call to Action */}
-      <section className="py-16 bg-secondary/30">
-        <div className="container max-w-3xl px-4 text-center mx-auto space-y-5">
-          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground font-sans">
-            Before you share it, verify it.
-          </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground max-w-xl mx-auto leading-relaxed">
-            Give every viral quote, policy claim, and forwarded screenshot a chance to meet verified evidence.
-          </p>
-          <div className="pt-2">
-            <button
-              onClick={scrollToChecker}
-              className="px-8 py-3 rounded-lg bg-primary text-primary-foreground font-bold text-xs shadow-sm hover:opacity-90 transition-all"
-            >
-              Start Investigation →
-            </button>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
+

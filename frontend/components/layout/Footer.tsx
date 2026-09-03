@@ -1,112 +1,127 @@
 import Link from "next/link";
-import { ShieldAlert, ExternalLink, GitBranch, ShieldCheck, CheckCircle2, Shield, Scale, Terminal } from "lucide-react";
+import {
+  ShieldCheck,
+  CheckCircle2,
+  GitBranch,
+  Terminal,
+  Activity,
+  Layers,
+  ArrowUpRight,
+  Database,
+  Cpu
+} from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border bg-card/90 backdrop-blur-sm mt-auto">
-      <div className="container max-w-7xl px-4 py-10 sm:px-8">
-        {/* Responsible AI Disclaimer Banner */}
-        <div className="mb-8 rounded-lg border border-border bg-secondary/40 p-4 text-xs leading-relaxed text-muted-foreground flex items-start gap-3">
-          <ShieldAlert className="h-4 w-4 text-accent-blue shrink-0 mt-0.5" />
-          <div>
-            <span className="font-semibold text-foreground mr-1">Responsible AI & Auditable Evidence Notice:</span>
-            SACHLAI.AI verifies assertions using publicly available records, gazettes, and independent journalism. It does not generate ungrounded opinions. When evidence is insufficient or contradictory, the deterministic verdict engine returns <strong className="text-foreground font-mono">UNVERIFIED</strong>.
-          </div>
-        </div>
+    <footer className="border-t border-border bg-card/95 backdrop-blur-md mt-auto">
+      <div className="container max-w-7xl px-4 py-12 sm:px-8">
+        {/* Main Footer Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-10 border-b border-border/80">
+          {/* Brand & Mission Column (5 cols) */}
+          <div className="md:col-span-5 space-y-4">
+            <Link href="/" className="inline-block transition-opacity hover:opacity-90">
+              <img
+                src="/logo.png"
+                alt="SACHAI.AI"
+                className="h-10 w-auto object-contain dark:hidden"
+              />
+              <img
+                src="/logo-dark.png"
+                alt="SACHAI.AI"
+                className="h-10 w-auto object-contain hidden dark:block"
+              />
+            </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          <div className="flex flex-col gap-2.5">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-md bg-primary text-primary-foreground flex items-center justify-center">
-                <ShieldCheck className="h-3.5 w-3.5" />
-              </div>
-              <span className="text-base font-extrabold tracking-tight text-foreground font-sans">
-                SACHLAI<span className="text-accent-blue font-mono text-xs ml-0.5">.AI</span>
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              The gold standard in algorithmic verification, multi-source forensic evidence aggregation, and claim auditing.
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
+              The gold standard in algorithmic verification, multi-source forensic evidence aggregation, and deterministic claim auditing. Verifying assertions against primary records and official gazettes.
             </p>
+
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/80 border border-border text-[11px] font-mono text-muted-foreground">
+              <span className="w-2 h-2 rounded-full bg-verdict-true animate-pulse" />
+              <span className="font-semibold text-foreground">v2.1 Verification Engine Online</span>
+            </div>
           </div>
 
-          <div>
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-primary mb-3">
-              Product
-            </h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Claim Checker
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Research Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link href="/history" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Public Audit History
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Navigation Columns (7 cols) */}
+          <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-8">
+            {/* Column 1: Platform */}
+            <div className="space-y-3">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-foreground">
+                Platform
+              </h4>
+              <ul className="space-y-2.5 text-xs">
+                <li>
+                  <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                    <span>Claim Checker</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
+                    Research Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/history" className="text-muted-foreground hover:text-foreground transition-colors">
+                    Public Audit History
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          <div>
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-primary mb-3">
-              Developers
-            </h4>
-            <ul className="space-y-2 text-xs">
-              <li>
-                <Link href="/developers" className="text-muted-foreground hover:text-foreground transition-colors">
-                  API Keys & SDKs
-                </Link>
-              </li>
-              <li>
-                <Link href="/changelog" className="text-muted-foreground hover:text-foreground transition-colors">
-                  Changelog v1.0
-                </Link>
-              </li>
-              <li>
-                <a
-                  href="http://localhost:8000/docs"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
-                >
-                  FastAPI OpenAPI <ExternalLink className="h-3 w-3" />
-                </a>
-              </li>
-            </ul>
-          </div>
+            {/* Column 2: Developers */}
+            <div className="space-y-3">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-foreground">
+                Developers
+              </h4>
+              <ul className="space-y-2.5 text-xs">
+                <li>
+                  <Link href="/developers" className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                    <span>API Reference & SDKs</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/changelog" className="text-muted-foreground hover:text-foreground transition-colors">
+                    Changelog v1.0
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          <div>
-            <h4 className="text-[11px] font-bold uppercase tracking-wider text-primary mb-3">
-              Integrity & Standards
-            </h4>
-            <ul className="space-y-2 text-xs text-muted-foreground">
-              <li className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3 w-3 text-verdict-true" />
-                <span>5-Tier Credibility Ranking</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3 w-3 text-verdict-true" />
-                <span>Syndication Clustering</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3 w-3 text-verdict-true" />
-                <span>Mathematical Verdict Engine</span>
-              </li>
-            </ul>
+            {/* Column 3: Integrity Standards */}
+            <div className="space-y-3">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-foreground">
+                Methodology
+              </h4>
+              <ul className="space-y-2.5 text-xs text-muted-foreground">
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-verdict-true shrink-0" />
+                  <span>5-Tier Credibility</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-verdict-true shrink-0" />
+                  <span>Wire Syndication</span>
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-verdict-true shrink-0" />
+                  <span>Deterministic Engine</span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
-        <div className="border-t border-border pt-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-muted-foreground gap-2">
-          <p>© 2026 SACHLAI.AI. Evidence Over Guesswork.</p>
-          <div className="flex items-center gap-4">
-            <span className="inline-flex items-center gap-1 font-mono">
-              <GitBranch className="h-3 w-3" /> MIT License
+        {/* Bottom Bar */}
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-muted-foreground gap-3">
+          <p className="font-sans text-[11px]">
+            © 2026 SACHAI.AI — Algorithmic Truth Aggregation & Forensic Evidence Engine.
+          </p>
+
+          <div className="flex items-center gap-4 text-[11px] font-mono">
+            <span className="inline-flex items-center gap-1.5">
+              <GitBranch className="h-3.5 w-3.5" /> MIT License
             </span>
+            <span className="text-border">•</span>
+            <span className="text-muted-foreground">Evidence Over Guesswork</span>
           </div>
         </div>
       </div>

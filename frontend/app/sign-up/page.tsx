@@ -28,7 +28,7 @@ export default function SignUpPage() {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Registration failed.");
+        throw new Error(errorData.detail || "Failed to create account.");
       }
 
       const data = await res.json();
@@ -47,12 +47,23 @@ export default function SignUpPage() {
   return (
     <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-cyan-500 mx-auto flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-            <ShieldCheck className="h-7 w-7" />
+        <div className="text-center space-y-3">
+          <Link href="/" className="inline-block transition-opacity hover:opacity-90">
+            <img
+              src="/logo.png"
+              alt="SACHAI.AI"
+              className="h-12 w-auto object-contain mx-auto dark:hidden"
+            />
+            <img
+              src="/logo-dark.png"
+              alt="SACHAI.AI"
+              className="h-12 w-auto object-contain mx-auto hidden dark:block"
+            />
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Create an Account</h1>
+            <p className="text-xs text-muted-foreground mt-1">Start verifying claims with evidence provenance</p>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Create an Account</h1>
-          <p className="text-xs text-muted-foreground">Start verifying claims with evidence provenance</p>
         </div>
 
         <div className="rounded-3xl border border-border/80 bg-card/80 backdrop-blur-xl p-6 sm:p-8 shadow-xl">

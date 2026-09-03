@@ -99,24 +99,18 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-md">
       <div className="container flex h-14 max-w-7xl items-center justify-between px-4 sm:px-8">
-        {/* Minimal Geometric Brand Mark */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm group-hover:opacity-90 transition-opacity">
-            <ShieldCheck className="h-4 w-4" />
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center">
-              <span className="text-base font-extrabold tracking-tight text-foreground font-sans">
-                SACHLAI
-              </span>
-              <span className="text-xs font-bold text-accent-blue font-mono ml-0.5">
-                .AI
-              </span>
-            </div>
-            <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-widest -mt-1 font-mono">
-              Fact-First Engine
-            </span>
-          </div>
+        {/* Official Brand Logo */}
+        <Link href="/" className="flex items-center group transition-opacity hover:opacity-90 py-1">
+          <img
+            src="/logo.png"
+            alt="SACHAI.AI"
+            className="h-9 sm:h-10 w-auto object-contain dark:hidden"
+          />
+          <img
+            src="/logo-dark.png"
+            alt="SACHAI.AI"
+            className="h-9 sm:h-10 w-auto object-contain hidden dark:block"
+          />
         </Link>
 
         {/* Clean Editorial Nav Links with Subtle Active Indicators */}
