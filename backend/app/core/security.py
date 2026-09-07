@@ -7,10 +7,9 @@ import urllib.parse
 from datetime import datetime, timedelta
 from typing import Optional, Tuple
 import jwt
-from passlib.context import CryptContext
+import bcrypt
 from backend.app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 
 # Blocked private IP ranges for SSRF protection
@@ -38,10 +37,15 @@ BLOCKED_IP_NETWORKS = [
 ]
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    # Use bcrypt directly to avoid passlib compatibility issues with bcrypt 4.x/5.x
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
+    except Exception:
+        return False
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()

@@ -1,8 +1,9 @@
+import uuid
+from datetime import datetime
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import Optional
-from datetime import datetime
 
 from backend.app.db.session import get_db
 from backend.app.models.user import User
@@ -68,6 +69,7 @@ async def sign_up(req: UserRegister, db: AsyncSession = Depends(get_db)):
         )
     
     user = User(
+        id=str(uuid.uuid4()),
         email=req.email,
         password_hash=hash_password(req.password),
         full_name=req.full_name,
