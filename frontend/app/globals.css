@@ -99,13 +99,61 @@ body {
   transform-style: preserve-3d;
 }
 
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(1.5deg);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+@keyframes spin-slow-3d {
+  from {
+    transform: rotateZ(0deg) rotateX(15deg);
+  }
+  to {
+    transform: rotateZ(360deg) rotateX(15deg);
+  }
+}
+
+.animate-spin-slow-3d {
+  animation: spin-slow-3d 28s linear infinite;
+}
+
+@keyframes spin-reverse-3d {
+  from {
+    transform: rotateZ(360deg) rotateY(20deg);
+  }
+  to {
+    transform: rotateZ(0deg) rotateY(20deg);
+  }
+}
+
+.animate-spin-reverse-3d {
+  animation: spin-reverse-3d 22s linear infinite;
+}
+
 @keyframes pulse-subtle {
   0%, 100% { opacity: 0.4; transform: scale(1); }
-  50% { opacity: 0.8; transform: scale(1.05); }
+  50% { opacity: 0.85; transform: scale(1.08); }
 }
 
 .animate-pulse-subtle {
   animation: pulse-subtle 4s ease-in-out infinite;
+}
+
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  100% { transform: translateX(200%) rotate(25deg); }
+}
+
+.animate-shimmer-sweep {
+  animation: shimmer-sweep 5s ease-in-out infinite;
 }
 
 @keyframes dash {

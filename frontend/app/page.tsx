@@ -32,6 +32,7 @@ import {
 import ClaimChecker from "@/components/checker/ClaimChecker";
 import EvidenceOrbit3D from "@/components/landing/EvidenceOrbit3D";
 import InputShowcase from "@/components/landing/InputShowcase";
+import HeroBrand3D from "@/components/landing/HeroBrand3D";
 
 export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -71,13 +72,28 @@ export default function HomePage() {
     <div className="flex-1 flex flex-col">
       {/* Investigation Section (Adaptive: Pro Workbench after Login / 2-Column Hero before Login) */}
       <section className="relative pt-8 sm:pt-12 pb-14 sm:pb-16 border-b border-border bg-background overflow-hidden">
+        {/* Atmospheric #007aff Apple-Style Radial Mesh Aura */}
+        <div
+          className="absolute inset-0 pointer-events-none -z-0 opacity-80 dark:opacity-100"
+          style={{
+            backgroundImage: `
+              radial-gradient(ellipse 750px 500px at 80% 50%, rgba(0, 122, 255, 0.14), transparent 70%),
+              radial-gradient(ellipse 550px 380px at 15% 30%, rgba(0, 122, 255, 0.08), transparent 60%),
+              radial-gradient(circle 350px at 50% 100%, rgba(16, 185, 129, 0.05), transparent 70%)
+            `,
+          }}
+        />
+
+        {/* Subtle Top Glowing #007aff Accent Line */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#007aff]/40 to-transparent pointer-events-none" />
+
         {/* Subtle Fine Grid Texture */}
-        <div className="absolute inset-0 bg-fine-grid opacity-40 pointer-events-none" />
+        <div className="absolute inset-0 bg-fine-grid opacity-35 pointer-events-none" />
 
         <div className="container max-w-container-max mx-auto px-4 sm:px-8 relative z-10">
           {isLoggedIn ? (
             /* Logged In: Streamlined Pro Investigation Workstation */
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="max-w-6xl mx-auto space-y-6">
               {/* Pro Workspace Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-5">
                 <div className="space-y-1">
@@ -125,49 +141,59 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Full Width Centered Claim Checker */}
-              <div className="w-full">
-                <ClaimChecker />
+              {/* Full Width Centered Claim Checker with 3D Brand Core */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                <div className="lg:col-span-7">
+                  <ClaimChecker />
+                </div>
+                <div className="lg:col-span-5 flex justify-center">
+                  <HeroBrand3D compact />
+                </div>
               </div>
             </div>
           ) : (
-            /* Logged Out: 2-Column Editorial Landing Hero */
-            <div className="flex flex-col lg:flex-row gap-12 items-center">
-              {/* Left Column: Headline & Value Proposition */}
-              <div className="flex-1 flex flex-col gap-4 relative z-20 text-left">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-secondary w-max rounded-full border border-border shadow-sm mb-2">
-                  <span className="w-2 h-2 rounded-full bg-verdict-true animate-pulse" />
-                  <span className="font-mono text-[11px] font-semibold text-foreground uppercase tracking-widest">
-                    v2.1 Verification Engine Online
-                  </span>
-                </div>
-
-                <h1 className="text-4xl sm:text-5xl lg:text-[60px] leading-[1.1] font-extrabold text-foreground tracking-tight font-sans">
+            /* Logged Out: 2-Column Editorial Landing Hero with 3D Branding Centerpiece */
+            <div className="flex flex-col lg:flex-row gap-10 lg:gap-14 items-center">
+              {/* Left Column: Headline, Value Proposition & Quick Actions */}
+              <div className="flex-1 flex flex-col gap-6 relative z-20 text-left">
+                <h1 className="text-4xl sm:text-5xl lg:text-[56px] leading-[1.08] font-extrabold text-foreground tracking-tight font-sans">
                   Don&apos;t just believe it.<br />
                   <span className="text-accent-blue relative inline-block">
-                    Verify it.
+                    Verify with SACHAI.AI
                     <span className="absolute bottom-1 left-0 w-full h-1 bg-accent-blue/30 -z-10 transform -skew-x-12" />
                   </span>
                 </h1>
 
-                <p className="text-base sm:text-lg text-muted-foreground max-w-xl mt-2 leading-relaxed">
-                  Verify claims, news, images and forwards using evidence from trusted sources. The gold standard in algorithmic verification.
+                <p className="text-base sm:text-lg text-muted-foreground max-w-lg leading-relaxed">
+                  Evidence-based algorithmic truth for any claim, image, or forward.
                 </p>
 
-                <div className="mt-4 flex items-center gap-3">
-                  <button
-                    onClick={scrollToChecker}
+                <div className="flex flex-wrap items-center gap-3 pt-2">
+                  <Link
+                    href="/sign-up"
                     className="bg-primary text-primary-foreground font-semibold text-xs px-6 py-3 rounded-lg hover:opacity-90 transition-all shadow-md shadow-primary/10 flex items-center gap-2 group"
                   >
-                    <span>Start Investigation</span>
+                    <span>Start Free Investigation</span>
                     <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
+                  </Link>
+                  <Link
+                    href="/sign-in"
+                    className="px-5 py-3 rounded-lg border border-border bg-card hover:bg-secondary text-xs font-semibold text-foreground transition-colors inline-flex items-center gap-1.5 shadow-sm"
+                  >
+                    <span>Sign In</span>
+                  </Link>
+                  <a
+                    href="#methodology"
+                    className="px-4 py-3 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1"
+                  >
+                    <span>Learn Methodology ↓</span>
+                  </a>
                 </div>
               </div>
 
-              {/* Right Column: Ingestion Centerpiece */}
-              <div className="flex-1 w-full relative z-10 flex justify-end">
-                <ClaimChecker />
+              {/* Right Column: 3D Holographic Brand Core Centerpiece */}
+              <div className="flex-1 w-full relative z-10 flex justify-center lg:justify-end">
+                <HeroBrand3D />
               </div>
             </div>
           )}
